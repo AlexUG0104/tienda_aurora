@@ -479,26 +479,26 @@ $usuarios = $gestorUsuarios->obtenerUsuarios();
 
         // Función para eliminar usuario
         async function deleteUser(userId) {
-            try {
-                const formData = new FormData();
-                formData.append('id', userId);
-                // Ruta ajustada para la API
-                const response = await fetch('../api/users/delete_user.php', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-                if (result.success) {
-                    alert('Usuario eliminado con éxito.');
-                    loadUsers(); // Recargar la tabla después de eliminar
-                } else {
-                    alert('Error al eliminar el usuario: ' + result.message);
-                }
-            } catch (error) {
-                console.error('Error al eliminar usuario:', error);
-                alert('Error de comunicación al eliminar el usuario.');
-            }
+    try {
+        const formData = new FormData();
+        formData.append('id', userId);
+        // VERIFICA ESTA RUTA
+        const response = await fetch('api/users/delete_user.php', {
+            method: 'POST',
+            body: formData
+        });
+        const result = await response.json(); // Intentará parsear la respuesta como JSON
+        if (result.success) {
+            alert('Usuario eliminado con éxito.');
+            loadUsers();
+        } else {
+            alert('Error al eliminar el usuario: ' + result.message);
         }
+    } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        alert('Error de comunicación al eliminar el usuario.'); // Este es el mensaje que estás viendo
+    }
+}
 
         // Función para cargar/recargar usuarios
         async function loadUsers() {

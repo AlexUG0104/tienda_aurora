@@ -6,7 +6,6 @@ error_reporting(E_ALL);
 require_once '../config_sesion.php';
 require_once '../db.php';
 
-// Redirección si el cliente no está logueado
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
     header("Location: ../cliente/login_cliente.php");
     exit;
@@ -28,7 +27,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             background-color: #f5f5f5;
             padding-top: 90px;
         }
-
         nav {
             background: linear-gradient(135deg, #abc1b2 0%, #9bb4a3 100%);
             height: 70px;
@@ -47,18 +45,15 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             font-size: 1.2rem;
             color: #fff;
         }
-
         .nav-left a {
             color: #f1f1f1;
             text-decoration: none;
         }
-
         .nav-right {
             color: #f0f0f0;
             position: relative;
             left: -60px;
         }
-
         .productos-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -67,7 +62,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             padding: 0 20px;
             max-width: 1200px;
         }
-
         .producto-card {
             background-color: #fff;
             border-radius: 15px;
@@ -80,32 +74,27 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             padding: 0;
             height: 100%;
         }
-
         .producto-card img {
             width: 100%;
             height: 280px;
             object-fit: cover;
         }
-
         .producto-card h3,
         .producto-card p,
         .producto-card .precio {
             padding: 10px 20px 0;
         }
-
         .producto-card h3 {
             margin-top: 10px;
             font-size: 1.2rem;
             color: #444;
         }
-
         .producto-card p {
             color: #666;
             font-size: 0.95rem;
             margin: 10px 0 0;
             flex-grow: 1;
         }
-
         .producto-card .precio {
             color: #222;
             font-weight: bold;
@@ -113,7 +102,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             margin-top: auto;
             padding-bottom: 10px;
         }
-
         .btn-comprar {
             background-color: #abc1b2;
             color: white;
@@ -126,11 +114,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             margin: 10px auto 20px;
             width: 80%;
         }
-
         .btn-comprar:hover {
             background-color: #8ba996;
         }
-
         #carrito {
             position: fixed;
             top: 80px;
@@ -145,19 +131,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             overflow-y: auto;
             z-index: 1001;
         }
-
         #carrito h4 {
             margin-top: 0;
             color: #333;
         }
-
         .carrito-item {
             font-size: 0.9rem;
             margin-bottom: 10px;
             border-bottom: 1px solid #ccc;
             padding-bottom: 5px;
         }
-
         .btn-realizar-compra {
             background-color: #6b8f71;
             color: white;
@@ -175,11 +158,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             margin-left: auto;
             margin-right: auto;
         }
-
         .btn-realizar-compra:hover {
             background-color: #547459;
         }
-
         footer {
             background-color: #abc1b2;
             color: white;
@@ -204,15 +185,14 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
 
 <div class="productos-grid">
     <?php
-  try {
-    // Ejecutar la función para obtener los productos
-    $stmt = $pdo->prepare("SELECT * FROM obtener_productos()");
-    $stmt->execute();
-    $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "<p>Error al obtener productos: " . htmlspecialchars($e->getMessage()) . "</p>";
-    $productos = []; // Evitar errores si falla la consulta
-}
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM obtener_productos()");
+        $stmt->execute();
+        $productos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "<p>Error al obtener productos: " . htmlspecialchars($e->getMessage()) . "</p>";
+        $productos = [];
+    }
     ?>
 </div>
 <div class="productos-grid">
@@ -221,10 +201,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
         $nombre = htmlspecialchars($p['nombre']);
         $descripcion = htmlspecialchars($p['descripcion']);
         $precio = number_format($p['precio_unitario'], 2);
-        // Suponiendo que la url_imagen está guardada como ruta relativa
-       $url = htmlspecialchars($p['url_imagen']);
-$imagen = (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) ? $url : "../imagenes/general/" . $url;
-
+        $url = htmlspecialchars($p['url_imagen']);
+        $imagen = (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) ? $url : "../imagenes/general/" . $url;
 
         echo "
         <div class='producto-card'>
@@ -243,10 +221,14 @@ $imagen = (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')
     <h4>🛒 Carrito</h4>
     <div id="carrito-items"></div>
     <button onclick="realizarCompra()" class="btn-realizar-compra">
-    <i class="fas fa-shopping-cart"></i> Comprar ahora
-</button>
-
+        <i class="fas fa-shopping-cart"></i> Comprar ahora
+    </button>
 </div>
+
+<!-- FORMULARIO OCULTO -->
+<form id="formPedido" method="post" action="../cliente/realizar_Pedido.php" style="display: none;">
+    <input type="hidden" name="carrito" id="carritoInput">
+</form>
 
 <footer>
     <p>Aurora Boutique &copy; 2025. Todos los derechos reservados.</p>
@@ -283,27 +265,9 @@ $imagen = (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')
             return;
         }
 
-        fetch('ventageneral.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(carrito)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.exito) {
-                alert("✅ Compra realizada con éxito.");
-                carrito.length = 0;
-                renderizarCarrito();
-            } else {
-                alert("❌ Error al procesar la compra: " + (data.mensaje || "Intenta nuevamente."));
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert("❌ Error de conexión con el servidor.");
-        });
+        const carritoInput = document.getElementById("carritoInput");
+        carritoInput.value = JSON.stringify(carrito);
+        document.getElementById("formPedido").submit();
     }
 </script>
 
