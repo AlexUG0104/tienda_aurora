@@ -10,6 +10,8 @@ if (!isset($_SESSION['usuario']) || $_SESSION['tipo_usuario'] != 1) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Menú de Acciones - Aurora Boutique</title>
@@ -107,10 +109,11 @@ if (!isset($_SESSION['usuario']) || $_SESSION['tipo_usuario'] != 1) {
     <div class="main-content-wrapper">
         <div class="menu-container">
             <h2>Menú de Acciones</h2>
-            <a class="menu-option" href="../admin/gestionar_productos.php"><i class="fas fa-box"></i> Gestionar Productos</a>
-            <a class="menu-option" href="../admin/gestionar_inventario.php"><i class="fas fa-warehouse"></i> Gestionar Inventario</a>
-            <a class="menu-option" href="../admin/ver_ventas.php"><i class="fas fa-chart-line"></i> Ver Ventas</a>
-            <a class="menu-option" href="../admin/login.php"><i class="fas fa-sign-out-alt"></i> Salir</a>
+            <a class="menu-option" href="../administrador/gestionar_usuarios.php"><i class="fas fa-users"></i> Gestionar Usuarios</a>
+            <a class="menu-option" href="../administrador/gestionar_productos.php"><i class="fas fa-box"></i> Gestionar Productos</a>
+            <a class="menu-option" href="../administrador/gestionar_pedidos.php"><i class="fas fa-clipboard-list"></i> Gestionar Pedidos</a>
+            <a class="menu-option" href="../administrador/ver_ventas.php"><i class="fas fa-chart-line"></i> Ver Ventas</a>
+            <a class="menu-option" href="../logout_admin.php"><i class="fas fa-sign-out-alt"></i> Salir</a>
         </div>
     </div>
 </body>

@@ -1,42 +1,32 @@
 <?php
-// admin/administrador/index.php
-
-
+//administrador/index.php
 ini_set('session.gc_maxlifetime', 1440);
-
 session_start();
-
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
-
-
-
 require_once '../db.php';
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Mi Tienda</title>
     <style>
-        /* CSS del panel de administración (idéntico al proporcionado anteriormente) */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             background-color: #f0f2f5;
-            display: flex; /* Cambiado de flex a block para la navbar superior */
+            display: flex; 
             flex-direction: column;
-            /* Agregado para que los elementos se apilen verticalmente */
             min-height: 100vh;
         }
-
-        /* Nuevo CSS para la Navbar */
         .navbar {
-            background-color: #34495e; /* Un color oscuro para la navbar */
+            background-color: #34495e; 
             color: white;
             padding: 15px 30px;
             display: flex;
@@ -44,23 +34,18 @@ require_once '../db.php';
             align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
         .navbar .brand {
             font-size: 1.8em;
             font-weight: bold;
             color: white;
             text-decoration: none;
-            margin-right: auto; /* Empuja los elementos del menú a la derecha */
+            margin-right: auto;
         }
-
-        /* Contenedor principal que contendrá el sidebar y el main-content */
         .container-wrapper {
-            display: flex; /* Se asegura que el sidebar y el main-content estén lado a lado */
-            flex-grow: 1; /* Permite que este contenedor ocupe el espacio restante */
+            display: flex; 
+            flex-grow: 1;
             width: 100%;
         }
-
-
         .sidebar {
             width: 250px;
             background-color: #2c3e50;
@@ -135,9 +120,9 @@ require_once '../db.php';
         }
         input[type="text"],
         input[type="password"],
-        textarea, /* Añadido para descripción de producto */
+        textarea, 
         select,
-        input[type="number"] { /* Añadido para campos numéricos */
+        input[type="number"] { 
             width: calc(100% - 22px);
             padding: 10px;
             margin-bottom: 20px;
@@ -238,33 +223,31 @@ require_once '../db.php';
             cursor: pointer;
             font-size: 16px;
             text-align: center;
-            margin-top: auto; /* Empuja el botón al final del sidebar */
-            display: block; /* Para que ocupe todo el ancho disponible */
+            margin-top: auto; 
+            display: block; 
             text-decoration: none;
             transition: background-color 0.3s ease;
         }
         .logout-button:hover {
             background-color: #d32f2f;
         }
-
-        /* Modal CSS (Si usas un modal para el formulario de producto) */
         .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1; /* Sit on top */
+            display: none; 
+            position: fixed; 
+            z-index: 1;
             left: 0;
             top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.4); 
         }
         .modal-content {
             background-color: #fefefe;
-            margin: 15% auto; /* 15% from the top and centered */
+            margin: 15% auto; 
             padding: 20px;
             border: 1px solid #888;
-            width: 80%; /* Could be more or less, depending on screen size */
+            width: 80%; 
             border-radius: 8px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             position: relative;
@@ -287,7 +270,6 @@ require_once '../db.php';
     <nav class="navbar">
         <a href="../logout_admin.php" class="brand">Aurora Boutique</a>
         </nav>
-
     <div class="container-wrapper">
         <div class="sidebar">
             <h2>Admin Panel</h2>
@@ -324,7 +306,6 @@ require_once '../db.php';
                         <input type="submit" value="Registrar Usuario">
                     </form>
                 </div>
-
                 <div class="user-list">
                     <h3>Usuarios Existentes</h3>
                     <table class="data-table">
@@ -341,11 +322,9 @@ require_once '../db.php';
                     </table>
                 </div>
             </div>
-
             <div id="pedidos" class="content-section">
                 <h2>Gestión de Pedidos</h2>
                 <p>Aquí se mostrará una lista de pedidos. Al hacer clic en un pedido, se abrirán sus detalles.</p>
-
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -378,12 +357,10 @@ require_once '../db.php';
                     <button type="button" class="action-button" onclick="document.getElementById('detalle-pedido-modal').style.display='none';">Cerrar Detalles</button>
                 </div>
             </div>
-
             <div id="inventario" class="content-section">
                 <h2>Control de Inventario</h2>
                 <p>Aquí se mostrarán los productos y sus detalles. Se podrán editar y agregar nuevos.</p>
                 <a href="#" class="add-button" id="add-product-button">Agregar Nuevo Producto</a>
-
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -398,7 +375,6 @@ require_once '../db.php';
                     <tbody id="productos-table-body">
                     </tbody>
                 </table>
-
                 <div id="product-form-modal" class="form-container" style="display:none; margin-top: 30px;">
                     <h3><span id="product-form-title">Agregar Nuevo Producto</span></h3>
                     <form id="form-producto">
@@ -427,12 +403,9 @@ require_once '../db.php';
         </div>
     </div>
     <script>
-        // JavaScript para manejar la carga de contenido y la interactividad
-        // Es crucial que los scripts de JS estén DESPUÉS del HTML que manipulan.
         async function loadContent(targetSection) {
-            
             let url = '';
-            let targetBodyId = ''; // Necesario para la tabla de productos
+            let targetBodyId = ''; 
 
             if (targetSection === 'usuarios') {
                 url = 'obtener_usuarios.php';
@@ -447,7 +420,6 @@ require_once '../db.php';
                 console.error("Sección objetivo no reconocida:", targetSection);
                 return;
             } 
-
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
@@ -460,32 +432,26 @@ require_once '../db.php';
                     console.error(`Error del servidor para ${targetSection}:`, result.error);
                     actualData = result.data || [];
                     const tableBody = document.getElementById(targetBodyId);
-                    let colspan = 5; // Valor predeterminado para usuarios
-                    if (targetSection === 'pedidos') colspan = 6; // Ajusta según el número real de columnas de tu tabla de pedidos
-                    if (targetSection === 'inventario') colspan = 6; // Ajusta según el número real de columnas de tu tabla de inventario
+                    let colspan = 5; 
+                    if (targetSection === 'pedidos') colspan = 6; 
+                    if (targetSection === 'inventario') colspan = 6; 
                     tableBody.innerHTML = `<tr><td colspan="${colspan}" style="color:red;">${result.error}</td></tr>`;
                     return;
                 } else {
-                    actualData = result; // Si no hay error, la respuesta es directamente el array
+                    actualData = result; 
                 }
-
                 const tableBody = document.getElementById(targetBodyId);
-                tableBody.innerHTML = ''; // Limpiar contenido anterior
-
+                tableBody.innerHTML = ''; 
                 if (actualData.length === 0) {
-                    let colspan = 5; // Valor predeterminado para usuarios
-                    if (targetSection === 'pedidos') colspan = 6; // Ajustar colspan según la tabla de pedidos
-                    if (targetSection === 'inventario') colspan = 6; // Ajustar colspan según la tabla de inventario
+                    let colspan = 5; 
+                    if (targetSection === 'pedidos') colspan = 6; 
+                    if (targetSection === 'inventario') colspan = 6; 
                     tableBody.innerHTML = `<tr><td colspan="${colspan}">No hay datos disponibles.</td></tr>`;
                     return;
                 }
-
-                // Este es el único forEach necesario para poblar la tabla.
                 actualData.forEach(item => {
                     let row = document.createElement('tr');
                     if (targetSection === 'usuarios') {
-                        // Aquí, los nombres de item.X deben coincidir con los ALIAS de la función de PostgreSQL
-                        // id, nombre, nombre_tipo_usuario (según la función corregida)
                         row.innerHTML = `
                             <td>${item.id}</td>
                             <td>${item.nombre}</td>
@@ -496,8 +462,6 @@ require_once '../db.php';
                             </td>
                         `;
                     } else if (targetSection === 'pedidos') {
-                        // Tu HTML de pedidos tiene: ID Pedido, Código Pedido, Cliente (ID), Fecha Compra, Estado, Acciones
-                        // Ajustado para que `Cliente (ID)` sea `id_cliente` y `Fecha Compra` sea `fecha_compra`
                         row.innerHTML = `
                             <td>${item.id}</td>
                             <td>${item.codigo_pedido}</td>
@@ -508,8 +472,6 @@ require_once '../db.php';
                             </td>
                         `;
                     } else if (targetSection === 'inventario') {
-                        // Según tu tabla `producto`: id, codigo_producto, nombre, descripcion, precio_unitario, stock, talla, id_categoria, color, fecha_creacion, usuario_creacion
-                        // Tu HTML de inventario tiene: ID, Código, Nombre, Stock, Precio, Acciones
                         row.innerHTML = `
                             <td>${item.id}</td>
                             <td>${item.codigo_producto}</td>
@@ -524,29 +486,21 @@ require_once '../db.php';
                     }
                     tableBody.appendChild(row);
                 });
-
                 attachEventListeners(targetSection);
-
             } catch (error) {
                 console.error(`Error al cargar datos para ${targetSection}:`, error);
                 const tableBody = document.getElementById(targetBodyId);
-                let colspan = 5; // Valor predeterminado para usuarios
+                let colspan = 5; 
                 if (targetSection === 'pedidos') colspan = 6;
                 if (targetSection === 'inventario') colspan = 6;
                 tableBody.innerHTML = `<tr><td colspan="${colspan}" style="color:red;">Error al cargar los datos: ${error.message}</td></tr>`;
             }
         }
-
-        // Función para adjuntar listeners a los botones dinámicos
         function attachEventListeners(section) {
-            // Limpiar listeners antiguos para evitar duplicados si la tabla se recarga.
-            // Una forma más robusta sería usar delegación de eventos, pero para este nivel, re-adjuntar es suficiente.
             if (section === 'pedidos') {
                 document.querySelectorAll('#pedidos-table-body .action-button[data-action="view-order"]').forEach(button => {
                     button.onclick = async function() {
                         const orderId = this.dataset.id;
-                        // Ajusta la obtención del código de pedido si la estructura de tu tabla cambia
-                        // Por ejemplo, si el código está en la segunda columna (índice 1)
                         const orderCode = this.closest('tr').children[1].textContent;
                         await loadOrderDetails(orderId, orderCode);
                     };
@@ -555,7 +509,6 @@ require_once '../db.php';
                     button.onclick = function() {
                         const orderId = this.dataset.id;
                         alert('Funcionalidad de cambiar estado del pedido ID: ' + orderId + ' (pendiente de implementar)');
-                        // Aquí podrías abrir un modal para seleccionar el nuevo estado y llamar a actualizar_estado_pedido.php
                     };
                 });
             } else if (section === 'inventario') {
@@ -578,7 +531,6 @@ require_once '../db.php';
                     button.onclick = function() {
                         const userId = this.dataset.id;
                         alert('Funcionalidad de editar usuario ID: ' + userId + ' (pendiente de implementar)');
-                        // Aquí cargarías los datos del usuario en un formulario de edición
                     };
                 });
                 document.querySelectorAll('#usuarios-table-body .action-button[data-action="delete-user"]').forEach(button => {
@@ -586,14 +538,11 @@ require_once '../db.php';
                         const userId = this.dataset.id;
                         if (confirm('¿Está seguro de eliminar este usuario?')) {
                             alert('Funcionalidad de eliminar usuario ID: ' + userId + ' (pendiente de implementar)');
-                            // Aquí llamarías a un PHP para eliminar el usuario y recargarías la tabla
                         }
                     };
                 });
             }
         }
-
-        // Función para cargar detalles de un pedido específico en el modal
         async function loadOrderDetails(orderId, orderCode) {
             const url = `obtener_detalle_pedido.php?id_pedido=${orderId}`;
             try {
@@ -625,19 +574,13 @@ require_once '../db.php';
                 document.getElementById('detalles-productos-body').innerHTML = `<tr><td colspan="4" style="color:red;">Error al cargar detalles: ${error.message}</td></tr>`;
             }
         }
-
-        // Función para obtener detalles del producto y llenar el formulario de edición
         async function getProductDetailsForEdit(productId) {
-            // Idealmente, deberías tener una función PHP como 'obtener_producto_por_id.php'
-            // que devuelva solo el producto específico para evitar cargar todos los productos.
-            // Por ahora, usamos obtener_productos.php y filtramos en JS.
             const url = 'obtener_productos.php';
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error('Error al obtener productos');
                 const products = await response.json();
-                const product = products.find(p => p.id == productId); // Convertir a == para comparar string con number si es necesario
-
+                const product = products.find(p => p.id == productId);
                 if (product) {
                     document.getElementById('product-form-title').textContent = 'Editar Producto';
                     document.getElementById('product_id').value = product.id;
@@ -659,14 +602,11 @@ require_once '../db.php';
                 alert('No se pudieron cargar los detalles del producto para editar.');
             }
         }
-
-        // Función para manejar la eliminación de un producto
         async function deleteProduct(productId) {
             if (confirm('¿Está seguro de eliminar este producto? Esta acción es irreversible.')) {
                 try {
                     const formData = new FormData();
                     formData.append('id', productId);
-
                     const response = await fetch('eliminar_producto.php', {
                         method: 'POST',
                         body: formData
@@ -674,7 +614,7 @@ require_once '../db.php';
                     const result = await response.json();
                     if (result.success) {
                         alert('Producto eliminado con éxito.');
-                        loadContent('inventario'); // Recargar la tabla de inventario
+                        loadContent('inventario'); 
                     } else {
                         alert('Error al eliminar el producto: ' + result.message);
                     }
@@ -684,49 +624,34 @@ require_once '../db.php';
                 }
             }
         }
-
-        // Event Listeners principales al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             const navLinks = document.querySelectorAll('.nav-link');
             const contentSections = document.querySelectorAll('.content-section');
-
             navLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
-                    e.preventDefault(); // Evita el comportamiento por defecto del enlace
-
-                    // Remover 'active' de todos los enlaces y secciones
+                    e.preventDefault(); 
                     navLinks.forEach(nav => nav.classList.remove('active'));
                     contentSections.forEach(section => section.classList.remove('active'));
-
-                    // Añadir 'active' al enlace clickeado y a la sección correspondiente
                     this.classList.add('active');
                     const targetId = this.getAttribute('data-target');
                     document.getElementById(targetId).classList.add('active');
-
-                    // Cargar contenido dinámicamente al cambiar de sección
                     loadContent(targetId);
                 });
             });
-
-            // Cargar la sección de usuarios por defecto al cargar la página
             loadContent('usuarios');
-
-            // Manejar el envío del formulario de registro de usuario (con AJAX para evitar recarga)
             document.getElementById('form-registro-usuario').addEventListener('submit', async function(e) {
-                e.preventDefault(); // Evitar el envío tradicional del formulario
-                const formData = new FormData(this); // Capturar los datos del formulario
-
+                e.preventDefault(); 
+                const formData = new FormData(this);
                 try {
                     const response = await fetch('procesar_usuario.php', {
                         method: 'POST',
-                        body: formData // FormData se encarga de los headers Content-Type automáticamente
+                        body: formData 
                     });
-                    const result = await response.json(); // Espera una respuesta JSON
-
+                    const result = await response.json(); 
                     if (result.success) {
                         alert('Usuario registrado con éxito. ID: ' + result.newUserId);
-                        this.reset(); // Limpiar el formulario
-                        loadContent('usuarios'); // Recargar la tabla de usuarios
+                        this.reset(); 
+                        loadContent('usuarios'); 
                     } else {
                         alert('Error al registrar usuario: ' + result.message);
                     }
@@ -735,56 +660,31 @@ require_once '../db.php';
                     alert('Error de comunicación al registrar usuario.');
                 }
             });
-
-            // Manejar el botón "Agregar Nuevo Producto"
             document.getElementById('add-product-button').addEventListener('click', function(e) {
                 e.preventDefault();
                 document.getElementById('product-form-title').textContent = 'Agregar Nuevo Producto';
-                document.getElementById('form-producto').reset(); // Limpiar el formulario
-                document.getElementById('product_id').value = ''; // Asegurarse de que el ID esté vacío para un nuevo producto
+                document.getElementById('form-producto').reset(); 
+                document.getElementById('product_id').value = ''; 
                 document.getElementById('product-form-modal').style.display = 'block';
             });
-
-            // Manejar el envío del formulario de producto (agregar/editar)
             document.getElementById('form-producto').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
-                const productId = formData.get('id'); // Obtener ID del campo oculto
-
+                const productId = formData.get('id'); 
                 let url = '';
                 let successMessage = '';
                 let errorMessage = '';
-
-                if (productId) { // Si hay un ID, es una actualización
-                    url = 'actualizar_producto.php';
+                if (productId) { url = 'actualizar_producto.php';
                     successMessage = 'Producto actualizado con éxito.';
-                    errorMessage = 'Error al actualizar el producto: ';
-                } else { // No hay ID, es un nuevo producto
-                    url = 'insertar_producto.php';
+                    errorMessage = 'Error al actualizar el producto: ';} else {  url = 'insertar_producto.php';
                     successMessage = 'Producto agregado con éxito. ID: ';
-                    errorMessage = 'Error al agregar el producto: ';
-                }
-
-                try {
+                    errorMessage = 'Error al agregar el producto: ';}try {
                     const response = await fetch(url, {
                         method: 'POST',
-                        body: formData
-                    });
-                    const result = await response.json();
-
-                    if (result.success) {
+                        body: formData});
+                    const result = await response.json();if (result.success) {
                         alert(successMessage + (result.newProductId ? result.newProductId : ''));
-                        document.getElementById('product-form-modal').style.display = 'none'; // Cerrar el modal
-                        loadContent('inventario'); // Recargar la tabla de inventario
-                    } else {
-                        alert(errorMessage + result.message);
-                    }
-                } catch (error) {
+                        document.getElementById('product-form-modal').style.display = 'none'; 
+                        loadContent('inventario'); } else {alert(errorMessage + result.message);}} catch (error) {
                     console.error('Error al enviar formulario de producto:', error);
-                    alert('Error de comunicación al guardar el producto.');
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+                    alert('Error de comunicación al guardar el producto.');} }); });</script></body></html>

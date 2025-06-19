@@ -19,6 +19,8 @@ if (isset($_SESSION['login_error'])) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login Cliente - Aurora Boutique</title>
@@ -199,7 +201,7 @@ if (isset($_SESSION['login_error'])) {
         </form>
 
         <p class="register-link">
-            ¿No tienes cuenta? <a href="/tienda_aurora/cliente/registrar_cliente.php">Crear cuenta</a>
+            ¿No tienes cuenta? <a href="/cliente/registrar_cliente.php">Crear cuenta</a>
 
         </p>
     </div>

@@ -66,7 +66,8 @@ if (isset($_SESSION['user_id'])) {
 ?>
 <!DOCTYPE html>
 <html lang="es">
-<head>
+<head>    <link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Iniciar Sesión - Aurora Boutique</title>

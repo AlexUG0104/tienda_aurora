@@ -4,6 +4,8 @@ require_once '../config_sesion.php';
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
     <meta charset="UTF-8" />
     <title>Pedido Exitoso - Aurora Boutique</title>
     <style>

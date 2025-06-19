@@ -157,6 +157,28 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             padding-bottom: 5px;
         }
 
+        .btn-realizar-compra {
+            background-color: #6b8f71;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .btn-realizar-compra:hover {
+            background-color: #547459;
+        }
+
         footer {
             background-color: #abc1b2;
             color: white;
@@ -219,6 +241,10 @@ $imagen = (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')
 <div id="carrito">
     <h4>🛒 Carrito</h4>
     <div id="carrito-items"></div>
+    <button onclick="realizarCompra()" class="btn-realizar-compra">
+    <i class="fas fa-shopping-cart"></i> Comprar ahora
+</button>
+
 </div>
 
 <footer>
@@ -248,6 +274,35 @@ $imagen = (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')
     function eliminarDelCarrito(index) {
         carrito.splice(index, 1);
         renderizarCarrito();
+    }
+
+    function realizarCompra() {
+        if (carrito.length === 0) {
+            alert("Tu carrito está vacío.");
+            return;
+        }
+
+        fetch('ventageneral.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(carrito)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.exito) {
+                alert("✅ Compra realizada con éxito.");
+                carrito.length = 0;
+                renderizarCarrito();
+            } else {
+                alert("❌ Error al procesar la compra: " + (data.mensaje || "Intenta nuevamente."));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("❌ Error de conexión con el servidor.");
+        });
     }
 </script>
 

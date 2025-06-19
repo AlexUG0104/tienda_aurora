@@ -51,6 +51,8 @@ if (isset($_GET['id_pedido'])) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
+<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
 <meta charset="UTF-8" />
 <title>Estado de Mis Pedidos</title>
 <style>
