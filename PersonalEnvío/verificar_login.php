@@ -1,27 +1,40 @@
 <?php
+session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-session_start();
 
-$conn = new PDO("pgsql:host=localhost;dbname=aurora", "cesar", "1234");
+try {
+    $conn = new PDO("pgsql:host=localhost;dbname=aurora", "cesar", "1234");
+} catch (PDOException $e) {
+    die("Error de conexión: " . $e->getMessage());
+}
 
-$usuario = $_POST['usuario'];
-$contrasena = $_POST['contrasena'];
+$usuario = $_POST['usuario'] ?? '';
+$contrasena = $_POST['contrasena'] ?? '';
 
-$sql = "SELECT c.id, c.nombre, c.contrasena, c.id_tipo_usuario
-        FROM credencial c
-        WHERE c.nombre = :usuario AND c.contrasena = :contrasena";
+if (empty($usuario) || empty($contrasena)) {
+    $_SESSION['login_error'] = "Por favor, ingrese usuario y contraseña.";
+    header("Location: login.php");
+    exit;
+}
+
+$sql = "SELECT id, nombre, contrasena, id_tipo_usuario 
+        FROM credencial 
+        WHERE nombre = :usuario AND contrasena = :contrasena";
 
 $stmt = $conn->prepare($sql);
 $stmt->execute(['usuario' => $usuario, 'contrasena' => $contrasena]);
-$credencial = $stmt->fetch();
+$credencial = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if ($credencial && $credencial['id_tipo_usuario'] == 3) {
-    $_SESSION['usuario'] = $credencial['usuario'];
+    $_SESSION['usuario'] = $credencial['nombre'];
     $_SESSION['id_credencial'] = $credencial['id'];
     $_SESSION['tipo_usuario'] = $credencial['id_tipo_usuario'];
     header("Location: pedidos_por_enviar.php");
+    exit;
 } else {
-    echo "<p>Usuario inválido o no autorizado. <a href='login.php'>Intentar de nuevo</a></p>";
+    $_SESSION['login_error'] = "Usuario inválido o no autorizado.";
+    header("Location: login.php");
+    exit;
 }

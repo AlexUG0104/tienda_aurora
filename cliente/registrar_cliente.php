@@ -61,12 +61,14 @@ if (isset($_SESSION['registro_error'])) {
         form {
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
+            width: 100%;
         }
 
         label {
@@ -96,7 +98,7 @@ if (isset($_SESSION['registro_error'])) {
         input[type="submit"] {
             margin-top: 20px;
             padding: 12px;
-            width: 100%;
+            max-width: 300px;
             font-size: 16px;
             font-weight: bold;
             border: none;
@@ -152,6 +154,7 @@ if (isset($_SESSION['registro_error'])) {
             margin-bottom: 10px;
         }
     </style>
+
     <script>
         function agregarTelefono() {
             const container = document.getElementById('telefonos');
@@ -193,6 +196,11 @@ if (isset($_SESSION['registro_error'])) {
                     </div>
                 </div>`;
             container.insertAdjacentHTML('beforeend', html);
+        }
+
+        function togglePassword() {
+            const input = document.getElementById("password");
+            input.type = input.type === "password" ? "text" : "password";
         }
     </script>
 </head>
@@ -292,9 +300,12 @@ if (isset($_SESSION['registro_error'])) {
                 <input type="text" name="usuario" required>
             </div>
 
-            <div class="field-group">
+            <div class="field-group" style="position: relative;">
                 <label>Contraseña:</label>
-                <input type="password" name="password" required>
+                <input type="password" name="password" id="password" required>
+                <span onclick="togglePassword()"
+                      style="position: absolute; top: 40px; right: 10px; cursor: pointer; font-size: 18px;"
+                      title="Mostrar/Ocultar contraseña">👁️</span>
             </div>
         </div>
 

@@ -4,15 +4,19 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-header('Content-Type: application/json');
+// Desde TIENDA_AURORA/administrador/api/users/
+// Para db.php que está en TIENDA_AURORA/
+require_once '../../../db.php';
 
-// Asumiendo que 'api/users/' está dos niveles por debajo de la raíz del proyecto
-require_once '--/../../db.php';
+// Para GestorUsuarios.php que está en TIENDA_AURORA/administrador/classes/
 require_once '../../classes/GestorUsuarios.php';
+
+header('Content-Type: application/json');
 
 $response = ['error' => ''];
 
 try {
+    // Verificar si $pdo está disponible (de db.php)
     if (!isset($pdo) || !$pdo instanceof PDO) {
         throw new Exception("La conexión a la base de datos (PDO) no está disponible.");
     }
@@ -23,18 +27,16 @@ try {
 
     $userId = (int)$_GET['id'];
     $gestorUsuarios = new GestorUsuarios($pdo);
-    $usuario = $gestorUsuarios->obtenerUsuarioPorId($userId); // Necesitamos esta nueva función
+    $usuario = $gestorUsuarios->obtenerUsuarioPorId($userId); // Asegúrate de que este método exista y funcione
 
     if ($usuario) {
-        // Asegurarse de no enviar la clave hashed
-        unset($usuario['clave']); // O el nombre de tu columna de clave
-
-        // Devolver id_tipo_usuario para rellenar el select
-        // Asegúrate de que tu SP o método `obtenerUsuarioPorId` devuelva este campo
-        if (!isset($usuario['id_tipo_usuario'])) {
-             // Si tu SP solo devuelve el nombre_tipo_usuario, podrías necesitar otra consulta
-             // o ajustar el SP para que también devuelva el ID del tipo de usuario.
-             // Por ahora, si no existe, el select no se seleccionará automáticamente.
+        // MUY IMPORTANTE: No envíes la clave hasheada al frontend por seguridad.
+        // Si tu SP o query devuelve una columna llamada 'contrasena' o 'clave', quítala.
+        if (isset($usuario['contrasena'])) { // O 'clave' si ese es el nombre de tu columna
+            unset($usuario['contrasena']);
+        }
+        if (isset($usuario['clave'])) { // Si usas 'clave' en tu SP
+            unset($usuario['clave']);
         }
 
         echo json_encode($usuario);
@@ -46,6 +48,6 @@ try {
 } catch (Exception $e) {
     $response['error'] = 'Error al obtener usuario: ' . $e->getMessage();
     error_log("Error en get_user_by_id.php: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
-    echo json_encode($response);
+    echo json_encode($response); // Asegúrate de que el JSON de error también sea válido
 }
 ?>

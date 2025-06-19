@@ -250,7 +250,7 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
                 <h3>Agregar/Editar Producto</h3>
                 <form id="form-producto" enctype="multipart/form-data">
                     <input type="hidden" id="producto_id" name="id">
-                    
+
 
                     <label for="codigo_producto">Código del Producto:</label>
                     <input type="text" id="codigo_producto" name="codigo_producto" required placeholder="Código único del producto">
@@ -452,6 +452,8 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
             }
         }
 
+
+        
         document.addEventListener('DOMContentLoaded', function() {
             // Manejo del formulario de producto (agregar/editar)
             document.getElementById('form-producto').addEventListener('submit', async function(e) {

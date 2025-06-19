@@ -4,40 +4,49 @@ require_once '../db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        // Validación: usuario duplicado
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM credencial WHERE nombre = :nombre");
+        $stmt->execute([':nombre' => $_POST['usuario']]);
+        if ($stmt->fetchColumn() > 0) {
+            $_SESSION['registro_error'] = "El nombre de usuario ya está registrado.";
+            header("Location: registrar_cliente.php");
+            exit();
+        }
+
+        // Validación: identificación duplicada
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM cliente WHERE identificacion = :identificacion");
+        $stmt->execute([':identificacion' => $_POST['identificacion']]);
+        if ($stmt->fetchColumn() > 0) {
+            $_SESSION['registro_error'] = "Ya existe un cliente con esa identificación.";
+            header("Location: registrar_cliente.php");
+            exit();
+        }
+
         $pdo->beginTransaction();
 
-        // Paso 1: Insertar en credencial
-        $sqlCred = "INSERT INTO credencial (nombre, contrasena, id_tipo_usuario) 
-            VALUES (:nombre, :contrasena, :id_tipo_usuario)";
-        $stmtCred = $pdo->prepare($sqlCred);
+        // Paso 1: Crear credencial usando función
+        $stmtCred = $pdo->prepare("SELECT sp_insertar_credencial(:nombre, :contrasena, :id_tipo_usuario)");
         $stmtCred->execute([
             ':nombre' => $_POST['usuario'],
             ':contrasena' => password_hash($_POST['password'], PASSWORD_DEFAULT),
             ':id_tipo_usuario' => 2 // Cliente
         ]);
+        $id_credencial = $stmtCred->fetchColumn();
 
-
-        // Paso 2: Insertar en cliente (NO PASAMOS id)
-        $sqlCliente = "INSERT INTO cliente (identificacion, nombre, apellido, id_credencial)
-                       VALUES (:identificacion, :nombre, :apellido, :id_credencial)";
-        $stmtCliente = $pdo->prepare($sqlCliente);
+        // Paso 2: Crear cliente usando función
+        $stmtCliente = $pdo->prepare("SELECT sp_insertar_cliente(:identificacion, :nombre, :apellido, :id_credencial)");
         $stmtCliente->execute([
             ':identificacion' => $_POST['identificacion'],
             ':nombre' => $_POST['nombre'],
             ':apellido' => $_POST['apellido'],
-            ':id_credencial' => 2
+            ':id_credencial' => $id_credencial
         ]);
+        $id_cliente = $stmtCliente->fetchColumn();
 
-        // Obtener correctamente el id del cliente generado
-        $cliente_id_stmt = $pdo->query("SELECT currval('cliente_id_seq')");
-        $cliente_id = $cliente_id_stmt->fetchColumn();
-
-        // Paso 3: cliente_direccion
-        $sqlDireccion = "INSERT INTO cliente_direccion (id_cliente, pais, provincia, canton, distrito, barrio)
-                         VALUES (:id_cliente, :pais, :provincia, :canton, :distrito, :barrio)";
-        $stmtDireccion = $pdo->prepare($sqlDireccion);
+        // Paso 3: Dirección con procedure
+        $stmtDireccion = $pdo->prepare("CALL sp_insertar_cliente_direccion(:id_cliente, :pais, :provincia, :canton, :distrito, :barrio)");
         $stmtDireccion->execute([
-            ':id_cliente' => $cliente_id,
+            ':id_cliente' => $id_cliente,
             ':pais' => $_POST['pais'],
             ':provincia' => $_POST['provincia'],
             ':canton' => $_POST['canton'],
@@ -45,23 +54,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ':barrio' => $_POST['barrio']
         ]);
 
-        // Paso 4: teléfonos
+        // Paso 4: Teléfonos
+        $stmtTelefono = $pdo->prepare("CALL sp_insertar_cliente_telefono(:id_cliente, :numero, :tipo)");
         foreach ($_POST['telefonos'] as $telefono) {
-            $sqlTelefono = "INSERT INTO cliente_telefono (id_cliente, numero, tipo) VALUES (:id_cliente, :numero, :tipo)";
-            $stmtTelefono = $pdo->prepare($sqlTelefono);
             $stmtTelefono->execute([
-                ':id_cliente' => $cliente_id,
+                ':id_cliente' => $id_cliente,
                 ':numero' => $telefono['numero'],
                 ':tipo' => $telefono['tipo']
             ]);
         }
 
-        // Paso 5: correos
+        // Paso 5: Correos
+        $stmtCorreo = $pdo->prepare("CALL sp_insertar_cliente_correo(:id_cliente, :correo, :tipo)");
         foreach ($_POST['correos'] as $correo) {
-            $sqlCorreo = "INSERT INTO cliente_correo (id_cliente, correo, tipo) VALUES (:id_cliente, :correo, :tipo)";
-            $stmtCorreo = $pdo->prepare($sqlCorreo);
             $stmtCorreo->execute([
-                ':id_cliente' => $cliente_id,
+                ':id_cliente' => $id_cliente,
                 ':correo' => $correo['correo'],
                 ':tipo' => $correo['tipo']
             ]);
@@ -74,7 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } catch (Exception $e) {
         $pdo->rollBack();
-        error_log("Error registro cliente: " . $e->getMessage());
+        error_log("Error en el registro de cliente: " . $e->getMessage());
         $_SESSION['registro_error'] = "Error al crear la cuenta: " . $e->getMessage();
         header("Location: registrar_cliente.php");
         exit();

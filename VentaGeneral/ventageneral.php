@@ -168,6 +168,20 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             text-align: center;
             margin-top: 60px;
         }
+        .btn-eliminar {
+            margin-left: 10px;
+            color: #e74c3c;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1rem;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        .btn-eliminar:hover {
+            color: #c0392b;
+        }
     </style>
 </head>
 <body>
@@ -201,6 +215,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
         $nombre = htmlspecialchars($p['nombre']);
         $descripcion = htmlspecialchars($p['descripcion']);
         $precio = number_format($p['precio_unitario'], 2);
+        $talla = htmlspecialchars($p['talla']);
         $url = htmlspecialchars($p['url_imagen']);
         $imagen = (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) ? $url : "../imagenes/general/" . $url;
 
@@ -210,7 +225,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             <h3>$nombre</h3>
             <p>$descripcion</p>
             <div class='precio'>\$$precio</div>
-            <button class='btn-comprar' onclick=\"agregarAlCarrito('$nombre', $precio)\">Comprar</button>
+            <div><small>Talla: $talla</small></div>
+            <button class='btn-comprar' onclick=\"agregarAlCarrito('$nombre', $precio, '$talla')\">Comprar</button>
         </div>";
     }
     ?>
@@ -237,8 +253,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
 <script>
     const carrito = [];
 
-    function agregarAlCarrito(nombre, precio) {
-        carrito.push({ nombre, precio });
+    function agregarAlCarrito(nombre, precio, talla) {
+        carrito.push({ nombre, precio, talla });
         renderizarCarrito();
     }
 
@@ -248,7 +264,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
         carrito.forEach((item, index) => {
             carritoItems.innerHTML += `
                 <div class="carrito-item">
-                    ${item.nombre} - $${item.precio.toFixed(2)}
+                    ${item.nombre} (Talla: ${item.talla}) - $${item.precio.toFixed(2)}
                     <button class="btn-eliminar" onclick="eliminarDelCarrito(${index})">✖</button>
                 </div>`;
         });

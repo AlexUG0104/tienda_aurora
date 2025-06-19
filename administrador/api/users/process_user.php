@@ -1,35 +1,66 @@
 <?php
-// api/users/process_user.php
-require_once '../../../db.php';
-require_once '../../administrador/classes/GestorUsuarios.php';
+// administrador/api/users/process_user.php
+
+// Habilitar reporte de errores para depuración (¡QUITAR EN PRODUCCIÓN!)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Rutas de inclusión corregidas
+require_once '../../../db.php'; // Subir 3 niveles desde api/users/ a TIENDA_AURORA/
+require_once '../../classes/GestorUsuarios.php'; // Subir 2 niveles desde api/users/ a administrador/ y luego a classes/
 
 header('Content-Type: application/json');
 
 $response = ['success' => false, 'message' => ''];
 
 try {
+    // Verificar si $pdo está disponible
+    if (!isset($pdo) || !$pdo instanceof PDO) {
+        throw new Exception("La conexión a la base de datos (PDO) no está disponible.");
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception("Método de solicitud no permitido. Se espera POST.");
+    }
+
+    $action = $_POST['action'] ?? '';
+
     $gestorUsuarios = new GestorUsuarios($pdo);
 
-    $id = isset($_POST['id']) ? (int)$_POST['id'] : 0; // Para identificar si es edición
-    $nombre = $_POST['nombre'] ?? '';
-    $clave = $_POST['clave'] ?? ''; // La clave solo se usa para registrar o si se actualiza
-    $id_tipo_usuario = (int)($_POST['tipo_usuario_select'] ?? 0);
+    if ($action === 'register') {
+        $nombre = $_POST['nombre'] ?? null;
+        $clave = $_POST['clave'] ?? null;
+        $tipoUsuarioId = $_POST['tipo_usuario_select'] ?? null; // Usar 'tipo_usuario_select' del HTML
 
-    if ($id > 0) {
-        // Lógica para actualizar un usuario existente
-        // Es crucial que 'actualizar_usuario' en GestorUsuarios reciba la clave como opcional (null)
-        // si no se envía una nueva clave desde el formulario.
-        $result = $gestorUsuarios->actualizarUsuario($id, $nombre, empty($clave) ? null : $clave, $id_tipo_usuario);
-        $response = $result; // Ya viene con 'success' y 'message'
+        // Validaciones aquí
+        if (empty($nombre) || empty($clave) || !is_numeric($tipoUsuarioId)) {
+            throw new Exception("Faltan datos obligatorios para el registro o son inválidos.");
+        }
+
+        $response = $gestorUsuarios->registrarUsuario($nombre, $clave, (int)$tipoUsuarioId);
+
+    } elseif ($action === 'update') {
+        $id = $_POST['id'] ?? null;
+        $nombre = $_POST['nombre'] ?? null;
+        $clave = $_POST['clave'] ?? null; // Puede ser null si no se cambia
+        $tipoUsuarioId = $_POST['tipo_usuario_select'] ?? null; // Usar 'tipo_usuario_select' del HTML
+
+        // Validaciones aquí
+        if (empty($id) || !is_numeric($id) || empty($nombre) || !is_numeric($tipoUsuarioId)) {
+            throw new Exception("Faltan datos obligatorios para la actualización o son inválidos.");
+        }
+
+        // Llama directamente a actualizarUsuario, no a procesarUsuario de la clase
+        $response = $gestorUsuarios->actualizarUsuario((int)$id, $nombre, $clave, (int)$tipoUsuarioId);
+
     } else {
-        // Lógica para registrar un nuevo usuario
-        $result = $gestorUsuarios->registrarUsuario($nombre, $clave, $id_tipo_usuario);
-        $response = $result; // Ya viene con 'success' y 'message' / 'newUserId'
+        throw new Exception("Acción no reconocida.");
     }
 
 } catch (Exception $e) {
-    error_log("Error en process_user.php: " . $e->getMessage());
-    $response = ['success' => false, 'message' => 'Error interno del servidor al procesar el usuario.'];
+    $response['message'] = 'Error en el servidor: ' . $e->getMessage();
+    error_log("Error en process_user.php: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
 }
 
 echo json_encode($response);

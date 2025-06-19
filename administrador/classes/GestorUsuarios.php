@@ -37,34 +37,35 @@ class GestorUsuarios {
      * @param int $id_tipo_usuario El ID del tipo de usuario (1: Admin, 2: Cliente, 3: Envíos).
      * @return array Un array con 'success' y el ID del nuevo usuario o un mensaje de error.
      */
-    public function registrarUsuario(string $nombre, string $clave, int $id_tipo_usuario): array {
-        try {
-            if (empty($nombre) || empty($clave) || !in_array($id_tipo_usuario, [1, 2, 3])) {
-                return ['success' => false, 'message' => 'Datos de usuario incompletos o inválidos.'];
-            }
-
-            $hashed_password = password_hash($clave, PASSWORD_DEFAULT);
-            $stmt = $this->pdo->prepare("SELECT insertar_usuario(:nombre, :clave, :id_tipo_usuario)");
-            $stmt->bindParam(':nombre', $nombre);
-            $stmt->bindParam(':clave', $hashed_password);
-            $stmt->bindParam(':id_tipo_usuario', $id_tipo_usuario, PDO::PARAM_INT);
-
-            if ($stmt->execute()) {
-                $newUserId = $stmt->fetchColumn(); // Obtiene el valor de retorno del SP
-                if ($newUserId) { // Si el SP retorna un ID (ej. mayor a 0)
-                    return ['success' => true, 'newUserId' => $newUserId];
-                } else {
-                    return ['success' => false, 'message' => 'El procedimiento almacenado no devolvió un ID de usuario válido.'];
-                }
-            } else {
-                return ['success' => false, 'message' => 'No se pudo registrar el usuario a través del procedimiento almacenado.'];
-            }
-
-        } catch (PDOException $e) {
-            error_log("Error al registrar usuario (SP insertar_usuario): " . $e->getMessage());
-            return ['success' => false, 'message' => 'Error de base de datos al registrar usuario.'];
+   public function registrarUsuario(string $nombre, string $clave, int $id_tipo_usuario): array {
+    try {
+        if (empty($nombre) || empty($clave) || !in_array($id_tipo_usuario, [1, 2, 3])) {
+            return ['success' => false, 'message' => 'Datos de usuario incompletos o inválidos.']; // OK, validación básica.
         }
+
+        $hashed_password = password_hash($clave, PASSWORD_DEFAULT); // OK, buen hashing.
+        // Asumiendo que 'insertar_usuario' en el SP espera 'contrasena'
+        $stmt = $this->pdo->prepare("SELECT insertar_usuario(:nombre, :contrasena, :id_tipo_usuario)"); // CAMBIO: Usar ':contrasena'
+        $stmt->bindParam(':nombre', $nombre);
+        $stmt->bindParam(':contrasena', $hashed_password); // CAMBIO: Bindear a ':contrasena'
+        $stmt->bindParam(':id_tipo_usuario', $id_tipo_usuario, PDO::PARAM_INT);
+
+        if ($stmt->execute()) {
+            $newUserId = $stmt->fetchColumn(); // OK
+            if ($newUserId) {
+                return ['success' => true, 'newUserId' => $newUserId];
+            } else {
+                return ['success' => false, 'message' => 'El procedimiento almacenado no devolvió un ID de usuario válido.'];
+            }
+        } else {
+            return ['success' => false, 'message' => 'No se pudo registrar el usuario a través del procedimiento almacenado.'];
+        }
+
+    } catch (PDOException $e) {
+        error_log("Error al registrar usuario (SP insertar_usuario): " . $e->getMessage());
+        return ['success' => false, 'message' => 'Error de base de datos al registrar usuario.'];
     }
+}
 
     /**
      * Elimina un usuario de la base de datos
@@ -132,17 +133,16 @@ class GestorUsuarios {
      * @param int $id_tipo_usuario Nuevo ID del tipo de usuario.
      * @return array Un array con 'success' o un mensaje de error.
      */
-   public function actualizarUsuario(int $id, string $nombre, ?string $clave = null, int $id_tipo_usuario): array {
+  public function actualizarUsuario(int $id, string $nombre, ?string $clave = null, int $id_tipo_usuario): array {
     try {
-        $hashed_password = $clave !== null && !empty($clave) ? password_hash($clave, PASSWORD_DEFAULT) : null;
+        $hashed_password = $clave !== null && !empty($clave) ? password_hash($clave, PASSWORD_DEFAULT) : null; // OK
 
-        // ¡CAMBIO AQUÍ EN EL ORDEN DE LOS PARÁMETROS!
-        $stmt = $this->pdo->prepare("SELECT actualizar_usuario(:id, :nombre, :id_tipo_usuario, :clave)");
+        
+        $stmt = $this->pdo->prepare("SELECT actualizar_usuario(:id, :nombre, :id_tipo_usuario, :nueva_contrasena)");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->bindParam(':nombre', $nombre);
-        // Ahora :id_tipo_usuario va antes de :clave
         $stmt->bindParam(':id_tipo_usuario', $id_tipo_usuario, PDO::PARAM_INT);
-        $stmt->bindParam(':clave', $hashed_password); // Clave con DEFAULT, va al final
+        $stmt->bindParam(':nueva_contrasena', $hashed_password); // CAMBIO: Usar ':nueva_contrasena'
 
         if ($stmt->execute()) {
             $result = $stmt->fetchColumn();
@@ -158,6 +158,27 @@ class GestorUsuarios {
     } catch (PDOException $e) {
         error_log("Error al actualizar usuario (SP actualizar_usuario): " . $e->getMessage());
         return ['success' => false, 'message' => 'Error de base de datos al actualizar usuario.'];
+    }
+}
+// Dentro de la clase GestorUsuarios// Este método parece duplicar funcionalidad con registrarUsuario y actualizarUsuario.
+// Generalmente, es mejor tener métodos específicos para cada acción.
+// Si lo mantienes, debe llamar a los métodos específicos.
+public function procesarUsuario($id, $nombre, $clave, $tipoUsuarioId, $accion) {
+    try {
+        if ($accion === 'register') {
+            // Llama a registrarUsuario que ya maneja hashing y SP.
+            return $this->registrarUsuario($nombre, $clave, $tipoUsuarioId);
+
+        } elseif ($accion === 'update') {
+            // Llama a actualizarUsuario que ya maneja hashing y SP.
+            return $this->actualizarUsuario($id, $nombre, $clave, $tipoUsuarioId);
+
+        } else {
+            throw new Exception("Acción de usuario no válida.");
+        }
+    } catch (Exception $e) { // Captura Exception, no solo PDOException
+        error_log("Error al procesar usuario: " . $e->getMessage());
+        return ['success' => false, 'message' => 'Error de procesamiento: ' . $e->getMessage()];
     }
 }
 }

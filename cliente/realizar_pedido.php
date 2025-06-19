@@ -23,11 +23,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['carrito'])) {
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <title>Resumen del Pedido - Aurora Boutique</title>
+    <title>Resumen del Pedido - Aurora Boutique S.A.</title>
     <link rel="icon" href="../imagenes/AB.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
     <style>
+        /* --- Tu CSS existente --- */
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #f0f2f5;
@@ -52,11 +53,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['carrito'])) {
             color: #333;
             text-decoration: none;
             font-size: 1.2rem;
+            font-weight: 700;
         }
         .content {
             padding-top: 100px;
             max-width: 800px;
-            margin: 0 auto;
+            margin: 0 auto 50px auto;
+            background: white;
+            padding: 25px 30px 40px 30px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        h1, h3 {
+            margin-top: 60px;
+            color: #2c3e50;
         }
         table {
             width: 100%;
@@ -73,73 +83,262 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['carrito'])) {
         th {
             background-color: #f4f4f4;
         }
-        .total {
+        .total, .iva, .total-con-iva {
             text-align: right;
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 700;
             margin-top: 20px;
+            color: #27ae60;
+        }
+        .iva, .total-con-iva {
+            margin-top: 5px;
+            font-size: 16px;
+            color: #16a085;
+        }
+        .cantidad-input {
+            width: 60px;
+            padding: 5px;
+            font-size: 1rem;
         }
         .btn-confirmar {
             background-color: #28a745;
             color: white;
-            padding: 12px 20px;
+            padding: 12px 30px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             display: block;
             margin: 30px auto 0;
+            transition: background-color 0.3s ease;
         }
         .btn-confirmar:hover {
             background-color: #218838;
+        }
+        /* Inputs para dirección y comprobante */
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 6px;
+            color: #34495e;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        /* Ocultar inicialmente */
+        #direccion-envio-container,
+        #comprobante-envio-container {
+            display: none;
+        }
+        /* Info empresa y métodos de pago */
+        .info-pago {
+            background-color: #e8f5e9;
+            border: 1px solid #c8e6c9;
+            padding: 15px 20px;
+            margin-top: 25px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            color: #2e7d32;
+        }
+        .info-pago h4 {
+            margin-top: 0;
+        }
+        /* Radios estilizados */
+        .metodo-pago label {
+            display: inline-block;
+            margin-right: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .metodo-pago input[type="radio"] {
+            margin-right: 6px;
+            transform: scale(1.2);
+            vertical-align: middle;
+        }
+        /* Botón eliminar producto */
+        .btn-eliminar {
+            margin-left: 10px;
+            color: #e74c3c;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.3rem;
+            line-height: 1;
+            vertical-align: middle;
+        }
+        .btn-eliminar:hover {
+            color: #c0392b;
         }
     </style>
 </head>
 <body>
 
 <nav>
-    <a href="../index.php"><i class="fas fa-store"></i> Aurora Boutique</a>
+    <a href="../index.php"><i class="fas fa-store"></i> Aurora Boutique S.A.</a>
 </nav>
 
 <div class="content">
     <h1>Resumen del Pedido</h1>
-    <table>
+    <form action="procesar_pago.php" method="post" id="pedido-form">
+        <table>
         <thead>
             <tr>
                 <th>Producto</th>
+                <th>Talla</th>
                 <th>Precio</th>
                 <th>Cantidad</th>
                 <th>Subtotal</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="pedido-body">
             <?php
             $total = 0;
-            foreach ($carrito as $item) {
+            foreach ($carrito as $index => $item) {
                 $nombre = htmlspecialchars($item['nombre']);
+                $talla = htmlspecialchars($item['talla'] ?? '');
                 $precio = floatval($item['precio']);
-                $cantidad = intval($item['cantidad']);
+                $cantidad = isset($item['cantidad']) ? intval($item['cantidad']) : 1; // Si no viene cantidad, 1 por defecto
                 $subtotal = $precio * $cantidad;
                 $total += $subtotal;
-                echo "<tr>
-                        <td>{$nombre}</td>
-                        <td>₡" . number_format($precio, 2) . "</td>
-                        <td>{$cantidad}</td>
-                        <td>₡" . number_format($subtotal, 2) . "</td>
-                      </tr>";
+                echo "<tr data-index='{$index}'>
+                        <td>
+                          {$nombre}
+                          <button type='button' class='btn-eliminar' onclick='eliminarProducto(this)' title='Eliminar producto'>×</button>
+                        </td>
+                        <td>{$talla}</td>
+                        <td class='precio' data-precio='{$precio}'>₡" . number_format($precio, 2) . "</td>
+                        <td>
+                          <input type='number' name='cantidades[{$index}]' class='cantidad-input' value='{$cantidad}' min='0' onchange='actualizarTotales()'>
+                        </td>
+                        <td class='subtotal'>₡" . number_format($subtotal, 2) . "</td>
+                    </tr>";
             }
             ?>
         </tbody>
-    </table>
-    <div class="total">
-        Total a pagar: ₡<?php echo number_format($total, 2); ?>
+        </table>
+        <div class="total">
+            Total estimado: ₡<span id="total"><?php echo number_format($total, 2); ?></span>
+        </div>
+        <div class="iva">
+            IVA (13%): ₡<span id="iva"><?php echo number_format($total * 0.13, 2); ?></span>
+        </div>
+        <div class="total-con-iva">
+            Total con IVA: ₡<span id="total-con-iva"><?php echo number_format($total * 1.13, 2); ?></span>
+        </div>
+
+        <!-- Información de pago -->
+        <h3>Información de Pago</h3>
+        <div class="metodo-pago">
+        <label><input type="radio" name="metodo_pago" value="tarjeta" required onchange="toggleDireccion()"> Tarjeta en tienda</label>
+        <label><input type="radio" name="metodo_pago" value="sinpe" onchange="toggleDireccion()"> SINPE Móvil</label>
+        <label><input type="radio" name="metodo_pago" value="transferencia" onchange="toggleDireccion()"> Transferencia</label>
+        <label><input type="radio" name="metodo_pago" value="efectivo" onchange="toggleDireccion()"> Pago contra entrega</label>
     </div>
 
-    <form action="procesar_pago.php" method="post">
-        <input type="hidden" name="carrito" value='<?php echo json_encode($carrito); ?>'>
+
+        <!-- Dirección de envío (solo si NO es pago contra entrega ni crédito) -->
+        <div id="direccion-envio-container" class="form-group">
+            <label for="direccion_envio">Dirección de Envío <small style="color:#e74c3c;">*</small></label>
+            <textarea id="direccion_envio" name="direccion_envio" rows="3" placeholder="Ingrese su dirección completa para el envío"></textarea>
+        </div>
+
+        <!-- Comprobante (solo para sinpe y transferencia) -->
+        <div id="comprobante-envio-container" class="form-group">
+            <label for="comprobante_envio">Comprobante de Pago <small style="color:#e74c3c;">*</small></label>
+            <textarea id="comprobante_envio" name="comprobante_envio" rows="3" placeholder="Ingrese el comprobante para completar el pago"></textarea>
+        </div>
+
+        <!-- Información adicional de pago -->
+        <div class="info-pago">
+            <h4>Datos para Transferencias y SINPE</h4>
+            <p><strong>Nombre de la empresa:</strong> Aurora Boutique S.A.</p>
+            <p><strong>Número de cuenta bancaria (IBAN):</strong> CR12 3456 7890 1234 5678 90</p>
+            <p><strong>Banco:</strong> Banco Nacional de Costa Rica</p>
+            <p><strong>Número SINPE Móvil:</strong> 
+                <i class="fas fa-mobile-alt"></i> <strong>8580-3868</strong> / 
+                <i class="fas fa-mobile-alt"></i> <strong>6007-8154</strong>
+            </p>
+        </div>
+
+        <input type="hidden" name="carrito" value='<?php echo htmlspecialchars(json_encode($carrito), ENT_QUOTES, 'UTF-8'); ?>'>
         <button class="btn-confirmar" type="submit">Confirmar y Pagar</button>
     </form>
 </div>
+
+<script>
+function actualizarTotales() {
+    const filas = document.querySelectorAll("#pedido-body tr");
+    let total = 0;
+    filas.forEach(fila => {
+        const precio = parseFloat(fila.querySelector(".precio").dataset.precio);
+        const cantidad = parseInt(fila.querySelector("input[type='number']").value);
+        const subtotal = precio * cantidad;
+        fila.querySelector(".subtotal").innerText = "₡" + subtotal.toFixed(2);
+        total += subtotal;
+    });
+    document.getElementById("total").innerText = total.toFixed(2);
+    document.getElementById("iva").innerText = (total * 0.13).toFixed(2);
+    document.getElementById("total-con-iva").innerText = (total * 1.13).toFixed(2);
+}
+
+function toggleDireccion() {
+    const metodo = document.querySelector('input[name="metodo_pago"]:checked').value;
+
+    const direccionDiv = document.getElementById("direccion-envio-container");
+    const direccionInput = document.getElementById("direccion_envio");
+
+    const comprobanteDiv = document.getElementById("comprobante-envio-container");
+    const comprobanteInput = document.getElementById("comprobante_envio");
+
+    // Mostrar dirección para todos excepto efectivo
+    if (metodo === "efectivo") {
+        direccionDiv.style.display = "none";
+        direccionInput.removeAttribute("required");
+        direccionInput.value = "";
+    } else {
+        direccionDiv.style.display = "block";
+        direccionInput.setAttribute("required", "required");
+    }
+
+    // Mostrar comprobante solo para SINPE y transferencia
+    if (metodo === "sinpe" || metodo === "transferencia") {
+        comprobanteDiv.style.display = "block";
+        comprobanteInput.setAttribute("required", "required");
+    } else {
+        comprobanteDiv.style.display = "none";
+        comprobanteInput.removeAttribute("required");
+        comprobanteInput.value = "";
+    }
+}
+
+
+// Función para eliminar producto del carrito visualmente y poner cantidad en 0 para no enviarlo
+function eliminarProducto(btn) {
+    const fila = btn.closest('tr');
+    const inputCantidad = fila.querySelector('input.cantidad-input');
+    inputCantidad.value = 0; // para que no se procese en el servidor
+    fila.style.display = 'none'; // ocultar fila visualmente
+    actualizarTotales();
+}
+
+// Inicializar estado correcto al cargar la página si alguna opción está preseleccionada
+window.addEventListener('DOMContentLoaded', () => {
+    if(document.querySelector('input[name="metodo_pago"]:checked')){
+        toggleCamposPago();
+    }
+});
+</script>
 
 </body>
 </html>

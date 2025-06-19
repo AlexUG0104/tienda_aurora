@@ -450,9 +450,10 @@ $usuarios = $gestorUsuarios->obtenerUsuarios();
         // Función para cargar los datos de un usuario en el formulario de edición
         async function loadUserForEdit(userId) {
             try {
+                console.log('ID de usuario que se intenta cargar para edición:', userId); // AÑADE ESTO
                 // Ruta para la API que obtiene un solo usuario por ID
                 // Asume que api/users/get_user_by_id.php está en la raíz del dominio
-                const response = await fetch('api/users/get_user_by_id.php?id=${userId}');
+                const response = await fetch(`./api/users/get_user_by_id.php?id=${userId}`);
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
@@ -578,7 +579,7 @@ $usuarios = $gestorUsuarios->obtenerUsuarios();
                 formData.append('action', 'update');
 
                 try {
-                    const response = await fetch('../api/users/process_user.php', {
+                    const response = await fetch('./api/users/process_user.php', {
                         method: 'POST',
                         body: formData
                     });
