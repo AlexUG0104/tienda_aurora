@@ -36,6 +36,8 @@ if (isset($_SESSION['estado_actualizado'])): ?>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Actualizar Estado</title>
+    <link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         .notificacion {

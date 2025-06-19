@@ -51,10 +51,11 @@ if (isset($_GET['id_pedido'])) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
 
 <meta charset="UTF-8" />
 <title>Estado de Mis Pedidos</title>
+<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
 <style>
     /* Aquí mantén tu estilo acorde a la paleta de Aurora Boutique */
     body { font-family: 'Montserrat', sans-serif; background: #f0f2f5; padding: 30px; }

@@ -10,11 +10,10 @@ require_once '../db.php';
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - Mi Tienda</title>
+    <link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

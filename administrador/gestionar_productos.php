@@ -18,11 +18,11 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Productos - Admin</title>
+    <link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
     <style>

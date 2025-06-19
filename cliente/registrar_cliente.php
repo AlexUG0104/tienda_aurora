@@ -16,10 +16,11 @@ if (isset($_SESSION['registro_error'])) {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
 
     <meta charset="UTF-8" />
     <title>Registro Cliente - Aurora Boutique</title>
+    <link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+
     <style>
         * {
             box-sizing: border-box;
