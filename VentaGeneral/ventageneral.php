@@ -226,7 +226,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
 </div>
 
 <!-- FORMULARIO OCULTO -->
-<form id="formPedido" method="post" action="../cliente/realizar_Pedido.php" style="display: none;">
+<form id="formPedido" method="post" action="../cliente/realizar_pedido.php" style="display: none;">
     <input type="hidden" name="carrito" id="carritoInput">
 </form>
 

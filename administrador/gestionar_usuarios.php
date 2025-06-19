@@ -483,7 +483,7 @@ $usuarios = $gestorUsuarios->obtenerUsuarios();
         const formData = new FormData();
         formData.append('id', userId);
         // VERIFICA ESTA RUTA
-        const response = await fetch('api/users/delete_user.php', {
+        const response = await fetch('./api/users/delete_user.php', {
             method: 'POST',
             body: formData
         });
