@@ -20,30 +20,31 @@ class GestorProductos {
     }
 
     public function insertarProducto($data) {
-        try {
-            $sql = "SELECT insertar_producto(
-                        :codigo_producto, :nombre, :descripcion, :precio_unitario, :stock,
-                        :talla, :id_categoria, :color, :usuario_creacion
-                    ) AS new_product_id";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                ':codigo_producto' => $data['codigo_producto'],
-                ':nombre' => $data['nombre'],
-                ':descripcion' => $data['descripcion'] ?? null,
-                ':precio_unitario' => (float)$data['precio_unitario'],
-                ':stock' => (int)$data['stock'],
-                ':talla' => $data['talla'] ?? null,
-                ':id_categoria' => isset($data['id_categoria']) ? (int)$data['id_categoria'] : null,
-                ':color' => $data['color'] ?? null,
-                ':usuario_creacion' => 1 // Asume un ID de usuario por defecto, idealmente lo pasarías
-            ]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            return ['success' => true, 'newProductId' => $result['new_product_id']];
-        } catch (PDOException $e) {
-            error_log("Error en GestorProductos::insertarProducto: " . $e->getMessage());
-            return ['success' => false, 'message' => 'Error de base de datos al agregar producto: ' . $e->getMessage()];
-        }
+    try {
+        $sql = "SELECT insertar_producto(
+                    :codigo_producto, :nombre, :descripcion, :precio_unitario, :stock,
+                    :talla, :id_categoria, :color, :usuario_creacion, :url_imagen
+                ) AS new_product_id";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':codigo_producto' => $data['codigo_producto'],
+            ':nombre' => $data['nombre'],
+            ':descripcion' => $data['descripcion'] ?? null,
+            ':precio_unitario' => (float)$data['precio_unitario'],
+            ':stock' => (int)$data['stock'],
+            ':talla' => $data['talla'] ?? null,
+            ':id_categoria' => isset($data['id_categoria']) ? (int)$data['id_categoria'] : null,
+            ':color' => $data['color'] ?? null,
+            ':usuario_creacion' => 1, // Por defecto
+            ':url_imagen' => $data['url_imagen'] ?? null
+        ]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return ['success' => true, 'newProductId' => $result['new_product_id']];
+    } catch (PDOException $e) {
+        error_log("Error en GestorProductos::insertarProducto: " . $e->getMessage());
+        return ['success' => false, 'message' => 'Error de base de datos al agregar producto: ' . $e->getMessage()];
     }
+}
 
     public function actualizarProducto($data) {
         try {

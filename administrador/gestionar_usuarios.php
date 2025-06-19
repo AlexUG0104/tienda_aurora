@@ -504,7 +504,7 @@ $usuarios = $gestorUsuarios->obtenerUsuarios();
         async function loadUsers() {
             try {
                 // Ruta ajustada para la API
-                const response = await fetch('api/users/get_users.php');
+                const response = await fetch('./api/users/get_users.php');
                 if (!response.ok) {
                     const errorText = await response.text();
                     throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
@@ -542,7 +542,6 @@ $usuarios = $gestorUsuarios->obtenerUsuarios();
                 document.getElementById('usuarios-table-body').innerHTML = `<tr><td colspan="4" style="color:red;">Error al cargar los usuarios: ${error.message}</td></tr>`;
             }
         }
-
 
         document.addEventListener('DOMContentLoaded', function() {
             // Manejo del formulario de registro de usuario
