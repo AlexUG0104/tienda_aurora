@@ -18,6 +18,17 @@ class GestorProductos {
             return ['error' => 'Error al obtener productos.', 'details' => $e->getMessage()];
         }
     }
+    public function obtenerCategorias() {
+    try {
+        $sql = "SELECT * FROM obtener_categorias()";
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        error_log("Error en GestorProductos::obtenerCategorias: " . $e->getMessage());
+        return ['error' => 'Error al obtener categorías.', 'details' => $e->getMessage()];
+    }
+}
+
 public function insertarProducto($data) {
     try {
         $sql = "SELECT insertar_producto(
@@ -46,7 +57,7 @@ public function insertarProducto($data) {
             ':id_categoria'     => isset($data['id_categoria']) ? (int)$data['id_categoria'] : null,
             ':color'            => isset($data['color']) ? (string)$data['color'] : null,
             ':usuario_creacion' => isset($data['usuario_creacion']) ? (int)$data['usuario_creacion'] : 1, // por defecto
-            ':url_imagen'       => isset($data['url_imagen']) ? (string)$data['url_imagen'] : null,
+            ':url_imagen' => !empty($data['url_imagen']) ? (string)$data['url_imagen'] : null,
         ]);
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);

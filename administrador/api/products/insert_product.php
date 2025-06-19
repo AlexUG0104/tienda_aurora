@@ -11,9 +11,22 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-$data = $_POST;
+$data = [
+    'codigo_producto' => $_POST['codigo_producto'] ?? null,
+    'nombre' => $_POST['nombre'] ?? null,
+    'descripcion' => $_POST['descripcion'] ?? null,
+    'precio_unitario' => $_POST['precio_unitario'] ?? null,
+    'stock' => $_POST['stock'] ?? null,
+    'talla' => $_POST['talla'] ?? null,
+    'id_categoria' => $_POST['id_categoria'] ?? null,
+    'color' => $_POST['color'] ?? null,
+    'usuario_creacion' => $_SESSION['usuario']['id'] ?? 1, // ✅ solo el ID
+    'url_imagen' => $_POST['url_imagen'] ?? null
+];
 
-// ✅ Validación básica de campos obligatorios
+
+
+// Validación básica de campos obligatorios
 if (
     empty($data['codigo_producto']) ||
     empty($data['nombre']) ||
@@ -24,7 +37,7 @@ if (
     exit();
 }
 
-// ✅ Manejo de imagen (opcional)
+// Manejo de imagen (opcional)
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
     $directorioFisico = realpath(__DIR__ . '/../../../imagenes/portada/') . '/';
     $rutaRelativaWeb = 'imagenes/portada/';
@@ -45,9 +58,11 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
         echo json_encode(['success' => false, 'message' => 'Error al guardar la imagen en el servidor.']);
         exit();
     }
-} else {
-    $data['url_imagen'] = null; // Imagen no obligatoria
+} elseif (!isset($_FILES['imagen']) && isset($_POST['url_imagen']) && trim($_POST['url_imagen']) !== '') {
+    $data['url_imagen'] = trim($_POST['url_imagen']); // ✅ Se respeta el valor manual
 }
+
+
 
 // Insertar producto
 try {

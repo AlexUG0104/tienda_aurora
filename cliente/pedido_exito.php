@@ -8,6 +8,9 @@ require_once '../config_sesion.php';
     <title>Pedido Exitoso - Aurora Boutique</title>
     <link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
 
+    <!-- Redirección automática después de 5 segundos -->
+    <meta http-equiv="refresh" content="5;url=/VentaGeneral/ventageneral">
+
     <style>
         body {
             font-family: 'Montserrat', sans-serif;
@@ -52,7 +55,8 @@ require_once '../config_sesion.php';
 <div class="success-box">
     <h1>¡Pedido Realizado con Éxito!</h1>
     <p>Su código de pedido es: <strong><?php echo htmlspecialchars($_GET['codigo']); ?></strong></p>
-    <a href="realizar_pedido.php">Realizar otro pedido</a>
+    <p>Será redirigido automáticamente a la vista general de ventas en unos segundos...</p>
+    <a href="/VentaGeneral/ventageneral.php">Ir ahora manualmente</a>
 </div>
 
 </body>

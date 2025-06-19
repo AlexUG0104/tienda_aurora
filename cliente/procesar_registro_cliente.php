@@ -43,11 +43,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ]);
         $id_cliente = $stmtCliente->fetchColumn();
 
+        // ✅ Resolver el país seleccionado
+        $pais_final = ($_POST['pais'] === 'Otro') ? $_POST['pais_otro'] : $_POST['pais'];
+
         // Paso 3: Dirección con procedure
         $stmtDireccion = $pdo->prepare("CALL sp_insertar_cliente_direccion(:id_cliente, :pais, :provincia, :canton, :distrito, :barrio)");
         $stmtDireccion->execute([
             ':id_cliente' => $id_cliente,
-            ':pais' => $_POST['pais'],
+            ':pais' => $pais_final,
             ':provincia' => $_POST['provincia'],
             ':canton' => $_POST['canton'],
             ':distrito' => $_POST['distrito'],

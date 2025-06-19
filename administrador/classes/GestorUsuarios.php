@@ -74,29 +74,6 @@ class GestorUsuarios {
      * @param int $id El ID del usuario a eliminar.
      * @return array Un array con 'success' o un mensaje de error.
      */
-    public function eliminarUsuario(int $id): array {
-        try {
-            
-            $stmt = $this->pdo->prepare("SELECT eliminar_usuario(:id)");
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-
-            if ($stmt->execute()) {
-                $result = $stmt->fetchColumn(); // Obtiene el valor de retorno del SP
-                if ($result === true || $result === 't') { // PostgreSQL retorna 't' para TRUE
-                    return ['success' => true, 'message' => 'Usuario eliminado correctamente.'];
-                } else {
-                    return ['success' => false, 'message' => 'El usuario no fue encontrado o no se pudo eliminar (SP).'];
-                }
-            } else {
-                return ['success' => false, 'message' => 'No se pudo ejecutar el procedimiento de eliminación de usuario.'];
-            }
-
-        } catch (PDOException $e) {
-            error_log("Error al eliminar usuario (SP eliminar_usuario): " . $e->getMessage());
-            return ['success' => false, 'message' => 'Error de base de datos al eliminar usuario.'];
-        }
-    }
-
     /**
      * Obtiene los detalles de un usuario específico por su ID
      * utilizando el procedimiento almacenado 'obtener_usuario_por_id()'.
@@ -181,4 +158,18 @@ public function procesarUsuario($id, $nombre, $clave, $tipoUsuarioId, $accion) {
         return ['success' => false, 'message' => 'Error de procesamiento: ' . $e->getMessage()];
     }
 }
+ // ✅ Solo este método fue modificado para usar el SP en PostgreSQL
+    public function eliminarUsuario($id) {
+    try {
+        $stmt = $this->pdo->prepare("CALL sp_eliminar_usuario(:id)");
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return ['success' => true, 'message' => 'Usuario eliminado con éxito.'];
+    } catch (PDOException $e) {
+        // Si el SP lanza EXCEPTION (como cuando no existe el usuario)
+        return ['success' => false, 'message' => $e->getMessage()];
+    }
+}
+
 }

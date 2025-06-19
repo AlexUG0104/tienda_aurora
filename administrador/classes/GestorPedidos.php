@@ -43,15 +43,55 @@ class GestorPedidos {
      *
      * @return array Un array de objetos stdClass con los datos de los pedidos o un array vacío.
      */
-    public function obtenerPedidosAdministrador() {
+    public function obtenerPedidosAdministrador($nombreCliente = '', $idCliente = '') {
         try {
-            $stmt = $this->pdo->query("SELECT * FROM obtener_pedidos_administrador()");
+            $sql = "SELECT * FROM obtener_pedidos_administrador() WHERE 1=1";
+            $params = [];
+    
+            if (!empty($nombreCliente)) {
+                $sql .= " AND nombre_cliente ILIKE :nombre_cliente";
+                $params[':nombre_cliente'] = '%' . $nombreCliente . '%';
+            }
+    
+            if (!empty($idCliente)) {
+                $sql .= " AND id_cliente = :id_cliente";
+                $params[':id_cliente'] = $idCliente;
+            }
+    
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute($params);
+    
             return $stmt->fetchAll(PDO::FETCH_OBJ);
         } catch (PDOException $e) {
-            error_log("Error al obtener pedidos para administrador: " . $e->getMessage());
+            error_log("Error al obtener ventas: " . $e->getMessage());
             return [];
         }
     }
+    
+
+    /**
+     * Obtiene solo los pedidos pendientes (estado_pedido = 1) para mostrar en el panel del administrador.
+     *
+     * @return array Un array de objetos con los pedidos pendientes.
+     */
+    public function obtenerPedidosAdministradorPendientes() {
+        try {
+            $sql = "SELECT p.*, pe.estado AS estado_pedido_texto, c.nombre AS nombre_cliente
+                    FROM pedido p
+                    JOIN pedido_estado pe ON p.estado_pedido = pe.id_estado
+                    JOIN cliente c ON p.id_cliente = c.id
+                    WHERE p.estado_pedido = 1
+                    ORDER BY p.fecha_compra DESC";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_OBJ);
+        } catch (PDOException $e) {
+            error_log("Error al obtener pedidos pendientes: " . $e->getMessage());
+            return [];
+        }
+    }
+
+    
 
     /**
      * Obtiene los detalles de un pedido específico por su ID (solo la fila principal del pedido).

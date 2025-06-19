@@ -12,8 +12,11 @@ if (!isset($_SESSION['usuario']) || $_SESSION['tipo_usuario'] != 1) {
 require_once '../db.php'; // Un nivel arriba para db.php
 require_once 'classes/GestorProductos.php'; // Entra a classes desde administrador
 
+
 $gestorProductos = new GestorProductos($pdo);
 $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inicial
+$categorias = $gestorProductos->obtenerCategorias();
+
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -218,12 +221,22 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
         .logout-button:hover {
             background-color: #d32f2f;
         }
-        .product-image-preview {
-            max-width: 80px;
-            max-height: 80px;
-            border-radius: 5px;
-            vertical-align: middle;
-        }
+       .product-image-preview {
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 5px;
+    display: block;
+    margin: auto;
+}
+.product-imagen-preview {
+    width: 50px;
+    height: auto;
+    border-radius: 4px;
+    object-fit: contain;
+}
+
+
     </style>
 </head>
 <body>
@@ -249,30 +262,56 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
             <div class="form-container">
                 <h3>Agregar/Editar Producto</h3>
                 <form id="form-producto" enctype="multipart/form-data">
-                    <input type="hidden" id="producto_id" name="id">
+    <input type="hidden" id="producto_id" name="id">
+
+    <label for="codigo_producto">Código del Producto:</label>
+    <input type="text" id="codigo_producto" name="codigo_producto" required placeholder="Código único del producto">
+
+    <label for="nombre_producto">Nombre del Producto:</label>
+    <input type="text" id="nombre_producto" name="nombre" required placeholder="Nombre del producto">
+
+    <label for="descripcion_producto">Descripción:</label>
+    <textarea id="descripcion_producto" name="descripcion" rows="4" placeholder="Descripción del producto"></textarea>
+
+    <label for="precio_producto">Precio:</label>
+    <input type="number" id="precio_producto" name="precio_unitario" step="0.01" required placeholder="0.00">
+
+    <label for="stock_producto">Stock:</label>
+    <input type="number" id="stock_producto" name="stock" required placeholder="0">
+
+    <!-- NUEVO: Campo para talla -->
+<label for="talla_producto">Talla:</label>
+<select id="talla_producto" name="talla">
+    <option value="">Seleccione una talla</option>
+    <option value="XS">XS</option>
+    <option value="S">S</option>
+    <option value="M">M</option>
+    <option value="L">L</option>
+    <option value="XL">XL</option>
+    <option value="XXL">XXL</option>
+    <option value="U">U (Única)</option>
+</select>
+
+    <label for="color_producto">Color:</label>
+    <input type="text" id="color_producto" name="color" placeholder="Ej: Rojo, Azul, Negro">
+
+   <label for="categoria_producto">Categoría:</label>
+
+    <select id="categoria_producto" name="id_categoria" required>
+    <option value="">Seleccione una categoría</option>
+        <?php foreach ($categorias as $categoria): ?>
+    <option value="<?= htmlspecialchars($categoria['id']) ?>">
+        <?= htmlspecialchars($categoria['nombre_categoria']) ?>
+    </option>
+        <?php endforeach; ?>
+
+    </select>
 
 
-                    <label for="codigo_producto">Código del Producto:</label>
-                    <input type="text" id="codigo_producto" name="codigo_producto" required placeholder="Código único del producto">
+   <label for="url_imagen">URL de la Imagen del Producto:</label>
+<input type="text" id="url_imagen" name="url_imagen" placeholder="https://ejemplo.com/imagen.jpg">
+<img id="imagen_preview" src="" alt="Previsualización de imagen" class="product-image-preview" style="display: none; margin-top: 10px;">
 
-
-                    <label for="nombre_producto">Nombre del Producto:</label>
-                    <input type="text" id="nombre_producto" name="nombre" required placeholder="Nombre del producto">
-
-                    <label for="descripcion_producto">Descripción:</label>
-                    <textarea id="descripcion_producto" name="descripcion" rows="4" placeholder="Descripción del producto"></textarea>
-
-                    <label for="precio_producto">Precio:</label>
-                    <input type="number" id="precio_producto" name="precio_unitario" step="0.01" required placeholder="0.00">
-
-
-                    <label for="stock_producto">Stock:</label>
-                    <input type="number" id="stock_producto" name="stock" required placeholder="0">
-
-                    <label for="imagen_producto">Imagen del Producto:</label>
-                    <input type="file" id="imagen_producto" name="imagen" accept="image/*">
-                    <img id="imagen_preview" src="" alt="Previsualización de imagen" class="product-image-preview" style="display: none; margin-top: 10px;">
-                    <p style="font-size: 0.8em; color: #666;">Selecciona una nueva imagen si quieres cambiarla. Deja vacío para mantener la actual.</p>
 
                     <input type="submit" value="Guardar Producto">
                 </form>
@@ -281,32 +320,36 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
             <div class="product-list">
                 <h3>Productos Existentes</h3>
                 <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Precio</th>
-                            <th>Stock</th>
-                            <th>Imagen</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
+                              
+<thead>
+ <tr>
+        <th>Imagen</th>
+        <th>ID</th>
+        <th>Nombre</th>
+        <th>Precio</th>
+        <th>Stock</th>
+        <th>Acciones</th>
+    </tr>
+</thead>
                     <tbody id="productos-table-body">
                         <?php
                         // Renderizar productos obtenidos por PHP
                         if (is_array($productos) && !isset($productos['error'])) {
                             foreach ($productos as $producto) {
                                 echo '<tr>';
-                                echo '<td>' . htmlspecialchars($producto['id']) . '</td>';
-                                echo '<td>' . htmlspecialchars($producto['nombre']) . '</td>';
-                                echo '<td>₡' . htmlspecialchars(number_format($producto['precio'], 2)) . '</td>';
-                                echo '<td>' . htmlspecialchars($producto['stock']) . '</td>';
                                 echo '<td>';
-                                if (!empty($producto['imagen_url'])) {
-                                    echo '<img src="' . htmlspecialchars($producto['imagen_url']) . '" alt="Producto" class="product-image-preview">';
-                                } else {
+                                if (!empty($producto['url_imagen'])) {
+                               echo '<img src="' . htmlspecialchars($producto['url_imagen']) . '" alt="Producto" class="product-image-preview">';
+
+                                }
+                                else {
                                     echo 'N/A';
                                 }
+                                echo '<td>' . htmlspecialchars($producto['id']) . '</td>';
+                                echo '<td>' . htmlspecialchars($producto['nombre']) . '</td>';
+                                echo '<td>₡' . htmlspecialchars(number_format($producto['precio_unitario'], 2)) . '</td>';
+                                echo '<td>' . htmlspecialchars($producto['stock']) . '</td>';
+                                
                                 echo '</td>';
                                 echo '<td>';
                                 echo '<button class="action-button edit-button" data-id="' . htmlspecialchars($producto['id']) . '" data-action="edit-product">Editar</button>';
@@ -352,15 +395,16 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
 
                 result.forEach(item => {
                     const row = document.createElement('tr');
-                    const imageUrl = item.imagen_url ? `../${item.imagen_url}` : ''; // Ajustar la ruta de la imagen si está fuera de 'administrador/'
-                    const imageHtml = imageUrl ? `<img src="${imageUrl}" alt="Producto" class="product-image-preview">` : 'N/A';
+                 const imageUrl = item.url_imagen ? item.url_imagen : '';
+                 const imageHtml = imageUrl? `<img src="${imageUrl}" alt="Producto" class="product-imagen-preview">` : 'N/A';
 
                     row.innerHTML = `
+                     <td>${imageHtml}</td>
                         <td>${item.id}</td>
                         <td>${item.nombre}</td>
-                        <td>₡${parseFloat(item.precio).toFixed(2)}</td>
+                        <td>₡${parseFloat(item.precio_unitario).toFixed(2)}</td>
                         <td>${item.stock}</td>
-                        <td>${imageHtml}</td>
+                        
                         <td>
                             <button class="action-button edit-button" data-id="${item.id}" data-action="edit-product">Editar</button>
                             <button class="action-button delete-button" data-id="${item.id}" data-action="delete-product">Eliminar</button>
@@ -411,13 +455,15 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
                     document.getElementById('stock_producto').value = product.stock;
 
                     const imagePreview = document.getElementById('imagen_preview');
-                    if (product.imagen_url) {
-                        imagePreview.src = `../${product.imagen_url}`; // Ajustar la ruta para la previsualización
-                        imagePreview.style.display = 'block';
-                    } else {
-                        imagePreview.style.display = 'none';
-                        imagePreview.src = '';
-                    }
+if (product.url_imagen) {
+    document.getElementById('url_imagen').value = product.url_imagen;
+    imagePreview.src = product.url_imagen;
+    imagePreview.style.display = 'block';
+} else {
+    document.getElementById('url_imagen').value = '';
+    imagePreview.src = '';
+    imagePreview.style.display = 'none';
+}
 
                     document.querySelector('#form-producto input[type="submit"]').value = 'Actualizar Producto';
                 } else {
@@ -453,7 +499,7 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
         }
 
 
-        
+
         document.addEventListener('DOMContentLoaded', function() {
             // Manejo del formulario de producto (agregar/editar)
             document.getElementById('form-producto').addEventListener('submit', async function(e) {
@@ -495,22 +541,19 @@ $productos = $gestorProductos->obtenerProductos(); // Para cargar la tabla inici
                 }
             });
 
-            // Previsualización de la imagen al seleccionarla
-            document.getElementById('imagen_producto').addEventListener('change', function() {
-                const preview = document.getElementById('imagen_preview');
-                const file = this.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        preview.src = e.target.result;
-                        preview.style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    preview.src = '';
-                    preview.style.display = 'none';
-                }
-            });
+           
+            // Actualizar previsualización si se escribe una URL directamente
+document.getElementById('url_imagen').addEventListener('input', function () {
+    const preview = document.getElementById('imagen_preview');
+    const url = this.value.trim();
+    if (url) {
+        preview.src = url;
+        preview.style.display = 'block';
+    } else {
+        preview.src = '';
+        preview.style.display = 'none';
+    }
+});
 
             // Al cargar la página, se adjuntan los eventos a los productos ya cargados por PHP
             attachProductEventListeners();

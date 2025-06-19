@@ -205,28 +205,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['carrito'])) {
             <?php
             $total = 0;
             foreach ($carrito as $index => $item) {
-                $nombre = htmlspecialchars($item['nombre']);
-                $talla = htmlspecialchars($item['talla'] ?? '');
-                $precio = floatval($item['precio']);
-                $cantidad = isset($item['cantidad']) ? intval($item['cantidad']) : 1; // Si no viene cantidad, 1 por defecto
-                $subtotal = $precio * $cantidad;
-                $total += $subtotal;
-                echo "<tr data-index='{$index}'>
-                        <td>
-                          {$nombre}
-                          <button type='button' class='btn-eliminar' onclick='eliminarProducto(this)' title='Eliminar producto'>×</button>
-                        </td>
-                        <td>{$talla}</td>
-                        <td class='precio' data-precio='{$precio}'>₡" . number_format($precio, 2) . "</td>
-                        <td>
-                          <input type='number' name='cantidades[{$index}]' class='cantidad-input' value='{$cantidad}' min='0' onchange='actualizarTotales()'>
-                        </td>
-                        <td class='subtotal'>₡" . number_format($subtotal, 2) . "</td>
-                    </tr>";
-            }
+            $id = htmlspecialchars($item['id']);
+            $nombre = htmlspecialchars($item['nombre']);
+            $talla = htmlspecialchars($item['talla'] ?? '');
+            $precio = floatval($item['precio']);
+            $cantidad = isset($item['cantidad']) ? intval($item['cantidad']) : 1;
+            $subtotal = $precio * $cantidad;
+            $total += $subtotal;
+            echo "<tr data-index='{$index}' data-id='{$id}' data-nombre='{$nombre}' data-talla='{$talla}' data-precio='{$precio}'>
+                    <td>
+                    {$nombre}
+                    <button type='button' class='btn-eliminar' onclick='eliminarProducto(this)' title='Eliminar producto'>×</button>
+                    </td>
+                    <td>{$talla}</td>
+                    <td class='precio' data-precio='{$precio}'>₡" . number_format($precio, 2) . "</td>
+                    <td>
+                    <input type='number' class='cantidad-input' value='{$cantidad}' min='0' onchange='actualizarTotales()'>
+                    </td>
+                    <td class='subtotal'>₡" . number_format($subtotal, 2) . "</td>
+                </tr>";
+        }
+
             ?>
         </tbody>
         </table>
+
         <div class="total">
             Total estimado: ₡<span id="total"><?php echo number_format($total, 2); ?></span>
         </div>
@@ -237,106 +240,101 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['carrito'])) {
             Total con IVA: ₡<span id="total-con-iva"><?php echo number_format($total * 1.13, 2); ?></span>
         </div>
 
-        <!-- Información de pago -->
         <h3>Información de Pago</h3>
         <div class="metodo-pago">
-        <label><input type="radio" name="metodo_pago" value="tarjeta" required onchange="toggleDireccion()"> Tarjeta en tienda</label>
-        <label><input type="radio" name="metodo_pago" value="sinpe" onchange="toggleDireccion()"> SINPE Móvil</label>
-        <label><input type="radio" name="metodo_pago" value="transferencia" onchange="toggleDireccion()"> Transferencia</label>
-        <label><input type="radio" name="metodo_pago" value="efectivo" onchange="toggleDireccion()"> Pago contra entrega</label>
-    </div>
+            <label><input type="radio" name="metodo_pago" value="tarjeta" required onchange="toggleDireccion()"> Tarjeta en tienda</label>
+            <label><input type="radio" name="metodo_pago" value="sinpe" onchange="toggleDireccion()"> SINPE Móvil</label>
+            <label><input type="radio" name="metodo_pago" value="transferencia" onchange="toggleDireccion()"> Transferencia</label>
+            <label><input type="radio" name="metodo_pago" value="efectivo" onchange="toggleDireccion()"> Pago contra entrega</label>
+        </div>
 
-
-        <!-- Dirección de envío (solo si NO es pago contra entrega ni crédito) -->
         <div id="direccion-envio-container" class="form-group">
-            <label for="direccion_envio">Dirección de Envío <small style="color:#e74c3c;">*</small></label>
+            <label for="direccion_envio">Dirección de Envío *</label>
             <textarea id="direccion_envio" name="direccion_envio" rows="3" placeholder="Ingrese su dirección completa para el envío"></textarea>
         </div>
 
-        <!-- Comprobante (solo para sinpe y transferencia) -->
         <div id="comprobante-envio-container" class="form-group">
-            <label for="comprobante_envio">Comprobante de Pago <small style="color:#e74c3c;">*</small></label>
+            <label for="comprobante_envio">Comprobante de Pago *</label>
             <textarea id="comprobante_envio" name="comprobante_envio" rows="3" placeholder="Ingrese el comprobante para completar el pago"></textarea>
         </div>
 
-        <!-- Información adicional de pago -->
         <div class="info-pago">
             <h4>Datos para Transferencias y SINPE</h4>
-            <p><strong>Nombre de la empresa:</strong> Aurora Boutique S.A.</p>
-            <p><strong>Número de cuenta bancaria (IBAN):</strong> CR12 3456 7890 1234 5678 90</p>
+            <p><strong>Nombre:</strong> Aurora Boutique S.A.</p>
+            <p><strong>IBAN:</strong> CR12 3456 7890 1234 5678 90</p>
             <p><strong>Banco:</strong> Banco Nacional de Costa Rica</p>
-            <p><strong>Número SINPE Móvil:</strong> 
-                <i class="fas fa-mobile-alt"></i> <strong>8580-3868</strong> / 
-                <i class="fas fa-mobile-alt"></i> <strong>6007-8154</strong>
-            </p>
+            <p><strong>SINPE:</strong> 8580-3868 / 6007-8154</p>
         </div>
 
-        <input type="hidden" name="carrito" value='<?php echo htmlspecialchars(json_encode($carrito), ENT_QUOTES, 'UTF-8'); ?>'>
+        <!-- CARRITO JSON ACTUALIZADO -->
+        <input type="hidden" name="carrito" id="carrito-hidden">
         <button class="btn-confirmar" type="submit">Confirmar y Pagar</button>
     </form>
 </div>
 
 <script>
+function obtenerCarritoActualizado() {
+    const filas = document.querySelectorAll("#pedido-body tr");
+    const carrito = [];
+
+    filas.forEach(fila => {
+        if (fila.style.display === "none") return;
+
+        const id = fila.dataset.id;
+        const nombre = fila.dataset.nombre;
+        const talla = fila.dataset.talla;
+        const precio = parseFloat(fila.dataset.precio);
+        const cantidad = parseInt(fila.querySelector("input.cantidad-input").value);
+
+        if (cantidad > 0) {
+            carrito.push({ id, nombre, talla, precio, cantidad });
+        }
+    });
+
+    return carrito;
+}
+
 function actualizarTotales() {
     const filas = document.querySelectorAll("#pedido-body tr");
     let total = 0;
+
     filas.forEach(fila => {
+        if (fila.style.display === "none") return;
+
         const precio = parseFloat(fila.querySelector(".precio").dataset.precio);
         const cantidad = parseInt(fila.querySelector("input[type='number']").value);
         const subtotal = precio * cantidad;
+
         fila.querySelector(".subtotal").innerText = "₡" + subtotal.toFixed(2);
         total += subtotal;
     });
+
     document.getElementById("total").innerText = total.toFixed(2);
     document.getElementById("iva").innerText = (total * 0.13).toFixed(2);
     document.getElementById("total-con-iva").innerText = (total * 1.13).toFixed(2);
+
+    document.getElementById("carrito-hidden").value = JSON.stringify(obtenerCarritoActualizado());
+}
+
+function eliminarProducto(btn) {
+    const fila = btn.closest('tr');
+    fila.querySelector("input.cantidad-input").value = 0;
+    fila.style.display = 'none';
+    actualizarTotales();
 }
 
 function toggleDireccion() {
     const metodo = document.querySelector('input[name="metodo_pago"]:checked').value;
+    const direccion = document.getElementById("direccion-envio-container");
+    const comprobante = document.getElementById("comprobante-envio-container");
 
-    const direccionDiv = document.getElementById("direccion-envio-container");
-    const direccionInput = document.getElementById("direccion_envio");
-
-    const comprobanteDiv = document.getElementById("comprobante-envio-container");
-    const comprobanteInput = document.getElementById("comprobante_envio");
-
-    // Mostrar dirección para todos excepto efectivo
-    if (metodo === "efectivo") {
-        direccionDiv.style.display = "none";
-        direccionInput.removeAttribute("required");
-        direccionInput.value = "";
-    } else {
-        direccionDiv.style.display = "block";
-        direccionInput.setAttribute("required", "required");
-    }
-
-    // Mostrar comprobante solo para SINPE y transferencia
-    if (metodo === "sinpe" || metodo === "transferencia") {
-        comprobanteDiv.style.display = "block";
-        comprobanteInput.setAttribute("required", "required");
-    } else {
-        comprobanteDiv.style.display = "none";
-        comprobanteInput.removeAttribute("required");
-        comprobanteInput.value = "";
-    }
+    direccion.style.display = metodo === "efectivo" ? "none" : "block";
+    comprobante.style.display = (metodo === "sinpe" || metodo === "transferencia") ? "block" : "none";
 }
 
-
-// Función para eliminar producto del carrito visualmente y poner cantidad en 0 para no enviarlo
-function eliminarProducto(btn) {
-    const fila = btn.closest('tr');
-    const inputCantidad = fila.querySelector('input.cantidad-input');
-    inputCantidad.value = 0; // para que no se procese en el servidor
-    fila.style.display = 'none'; // ocultar fila visualmente
-    actualizarTotales();
-}
-
-// Inicializar estado correcto al cargar la página si alguna opción está preseleccionada
+// Inicializar comportamiento
 window.addEventListener('DOMContentLoaded', () => {
-    if(document.querySelector('input[name="metodo_pago"]:checked')){
-        toggleCamposPago();
-    }
+    actualizarTotales(); // Para cargar el carrito desde el inicio
 });
 </script>
 
