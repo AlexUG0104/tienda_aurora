@@ -212,12 +212,19 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
 <div class="productos-grid">
     <?php
     foreach ($productos as $p) {
+        $id = (int)$p['id']; 
         $nombre = htmlspecialchars($p['nombre']);
         $descripcion = htmlspecialchars($p['descripcion']);
         $precio = number_format($p['precio_unitario'], 2);
         $talla = htmlspecialchars($p['talla']);
         $url = htmlspecialchars($p['url_imagen']);
-        $imagen = (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) ? $url : "../imagenes/general/" . $url;
+        if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+            $imagen = $url;
+        } elseif (str_starts_with($url, 'imagenes/')) {
+            $imagen = "../" . $url; // ya incluye 'imagenes/portada/' u otra carpeta
+        } else {
+            $imagen = "../imagenes/portada/" . $url; // fallback si viene solo el nombre del archivo
+}
 
         echo "
         <div class='producto-card'>
@@ -226,7 +233,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             <p>$descripcion</p>
             <div class='precio'>\$$precio</div>
             <div><small>Talla: $talla</small></div>
-            <button class='btn-comprar' onclick=\"agregarAlCarrito('$nombre', $precio, '$talla')\">Comprar</button>
+            <button class='btn-comprar' onclick=\"agregarAlCarrito($id, '$nombre', $precio, '$talla')\">Comprar</button>
         </div>";
     }
     ?>
@@ -253,9 +260,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
 <script>
     const carrito = [];
 
-    function agregarAlCarrito(nombre, precio, talla) {
-        carrito.push({ nombre, precio, talla });
-        renderizarCarrito();
+    function agregarAlCarrito(id, nombre, precio, talla) {
+    carrito.push({ id, nombre, precio, talla, cantidad: 1 });
+    renderizarCarrito();
     }
 
     function renderizarCarrito() {
