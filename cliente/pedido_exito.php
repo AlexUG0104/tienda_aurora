@@ -9,7 +9,7 @@ require_once '../config_sesion.php';
     <link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
 
     <!-- Redirección automática después de 5 segundos -->
-    <meta http-equiv="refresh" content="5;url=/VentaGeneral/ventageneral">
+    <meta http-equiv="refresh" content="5;url=/VentaGeneral/ventageneral.php">
 
     <style>
         body {

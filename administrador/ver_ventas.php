@@ -2,6 +2,11 @@
 // administrador/ver_ventas.php
 require_once '../config_sesion.php';
 
+// Habilitar reporte de errores para depuración (¡QUITAR EN PRODUCCIÓN!)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 if (!isset($_SESSION['usuario']) || $_SESSION['tipo_usuario'] != 1) {
     header("Location: ../login_admin.php");
     exit();
@@ -82,8 +87,7 @@ $ventas = $gestorPedidos->obtenerPedidosAdministrador($filtro_nombre, $filtro_id
                 <tr>
                     <th>ID Pedido</th>
                     <th>Código Pedido</th>
-                    <th>Cliente (ID)</th>
-                    <th>Fecha Compra</th>
+                    <th>Cliente (ID - Nombre)</th> <th>Fecha Compra</th>
                     <th>Estado</th>
                     <th>Total Pedido</th>
                 </tr>
@@ -93,11 +97,13 @@ $ventas = $gestorPedidos->obtenerPedidosAdministrador($filtro_nombre, $filtro_id
             if (is_array($ventas) && !empty($ventas)) {
                 foreach ($ventas as $venta) {
                     echo '<tr>';
-                    echo '<td>' . htmlspecialchars($venta->id) . '</td>';
-                    echo '<td>' . htmlspecialchars($venta->codigo_pedido) . '</td>';
-                    echo '<td>' . htmlspecialchars($venta->id_cliente) . ' - ' . htmlspecialchars($venta->nombre_cliente ?? 'N/A') . '</td>';
+                    echo '<td>' . htmlspecialchars($venta->id ?? 'N/A') . '</td>';
+                    echo '<td>' . htmlspecialchars($venta->codigo_pedido ?? 'N/A') . '</td>';
+                    // CAMBIO CLAVE AQUÍ: Usar $venta->cliente_id y $venta->cliente_nombre
+                    echo '<td>' . htmlspecialchars($venta->cliente_id ?? 'N/A') . ' - ' . htmlspecialchars($venta->cliente_nombre ?? 'N/A') . '</td>';
                     echo '<td>' . htmlspecialchars($venta->fecha_compra ? (new DateTime($venta->fecha_compra))->format('d/m/Y') : 'N/A') . '</td>';
-                    echo '<td>' . htmlspecialchars($venta->estado_texto ?? 'Desconocido') . '</td>';
+                    // CAMBIO CLAVE AQUÍ: Usar $venta->estado_pedido_nombre
+                    echo '<td>' . htmlspecialchars($venta->estado_pedido_nombre ?? 'Desconocido') . '</td>';
                     echo '<td>₡' . htmlspecialchars(number_format($venta->total_pedido ?? 0, 2)) . '</td>';
                     echo '</tr>';
                 }

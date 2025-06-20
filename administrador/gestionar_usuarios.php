@@ -4,19 +4,6 @@
 // Iniciar la sesión al principio del script
 session_start();
 
-// Opcional: Redirigir si el usuario no está autenticado o no es admin
-// if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'admin') {
-//     header('Location: ../login_admin.php'); // Asume que tienes un login_admin.php en la raíz del proyecto
-//     exit();
-// }
-
-// Habilitar reporte de errores para depuración (¡QUITAR EN PRODUCCIÓN!)
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-// Rutas a los archivos necesarios
-// db.php está un nivel arriba de 'admin/'
 require_once '../db.php';
 // GestorUsuarios.php está en 'classes/' que está un nivel arriba de 'admin/'
 require_once 'classes/GestorUsuarios.php';

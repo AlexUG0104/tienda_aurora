@@ -1,37 +1,97 @@
 <?php
+// Archivo: pedidos_actualizar_estado.php
 session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../utils/Mailer.php';
+
+use Aurora\Mailer;
+
+// Conexión a base de datos
 $conn = new PDO("pgsql:host=localhost;dbname=aurora", "cesar", "1234");
 
+// Obtener ID del pedido por GET
 $id_pedido = $_GET['id'] ?? null;
 
-// Si se envía el formulario para actualizar el estado
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nuevo_estado = $_POST['estado'];
-
-    $sql = "UPDATE pedido SET estado_pedido = :estado WHERE id = :id";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([':estado' => $nuevo_estado, ':id' => $id_pedido]);
-
-    $_SESSION['estado_actualizado'] = true;
-    header("Location: pedidos_por_enviar.php");
-    exit;
+if (!$id_pedido) {
+    die('No se proporcionó un ID de pedido válido.');
 }
 
-// Obtener todos los estados posibles
-$sql = "SELECT id_estado, estado FROM pedido_estado";
-$estados = $conn->query($sql)->fetchAll();
+// Si el formulario se envía
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nuevo_estado = $_POST['estado'] ?? null;
+    if ($nuevo_estado) {
+        $sql = "UPDATE pedido SET estado_pedido = :estado WHERE id = :id";
+        $stmt = $conn->prepare($sql);
+        $stmt->execute([':estado' => $nuevo_estado, ':id' => $id_pedido]);
+
+        $sql_estado = "SELECT estado FROM pedido_estado WHERE id_estado = :id_estado";
+        $stmt_estado = $conn->prepare($sql_estado);
+        $stmt_estado->execute([':id_estado' => $nuevo_estado]);
+        $estado_actual = $stmt_estado->fetchColumn();
+
+        if (strtolower($estado_actual) === 'enviado') {
+    $sql_info = "SELECT c.nombre AS nombre_cliente, cc.correo AS correo_cliente, p.fecha_compra
+    FROM pedido p
+    JOIN cliente c ON c.id = p.id_cliente
+    JOIN cliente_correo cc ON cc.id_cliente = c.id
+    WHERE p.id = :id
+    LIMIT 1";
+$stmt_info = $conn->prepare($sql_info);
+$stmt_info->execute([':id' => $id_pedido]);
+$pedido = $stmt_info->fetch(PDO::FETCH_ASSOC);
+
+            if ($pedido && filter_var($pedido['correo_cliente'], FILTER_VALIDATE_EMAIL)) {
+                $mailer = new Mailer();
+
+                $asunto = "¡Tu pedido ha sido enviado!";
+                $cuerpo = "
+                    <html>
+                    <head>
+                        <style>
+                            body { font-family: Arial, sans-serif; background-color: #f9f9f9; color: #333; }
+                            .container { max-width: 600px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+                            h2 { color: #007BFF; }
+                            p { font-size: 16px; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='container'>
+                            <h2>¡Hola " . htmlspecialchars($pedido['nombre_cliente']) . "!</h2>
+                            <p>Nos alegra informarte que tu pedido realizado el <strong>" . date('d/m/Y', strtotime($pedido['fecha_compra'])) . "</strong> ha sido <strong>enviado</strong>.</p>
+                            <p>Gracias por tu compra en <strong>Aurora Boutique</strong>. Te mantendremos al tanto hasta la entrega.</p>
+                            <p>¡Esperamos que disfrutes tu compra!</p>
+                            <p style='margin-top: 30px;'>Atentamente,<br><strong>Boutique Aurora CR</strong></p>
+                        </div>
+                    </body>
+                    </html>
+                ";
+
+                if (!$mailer->enviarCorreo($pedido['correo_cliente'], $asunto, $cuerpo)) {
+                    error_log("No se pudo enviar el correo al cliente con ID pedido: $id_pedido");
+                }
+            }
+        }
+
+        $_SESSION['estado_actualizado'] = true;
+        header("Location: pedidos_por_enviar.php");
+        exit;
+    }
+}
+
+$sql_estados = "SELECT id_estado, estado FROM pedido_estado";
+$estados = $conn->query($sql_estados)->fetchAll();
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Actualizar Estado</title>
-    <link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
+    <title>Actualizar Estado del Pedido #<?= htmlspecialchars($id_pedido) ?></title>
+    <link rel="icon" href="../imagenes/AB.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -120,7 +180,9 @@ $estados = $conn->query($sql)->fetchAll();
                 <label for="estado">Nuevo estado:</label>
                 <select name="estado" id="estado" required>
                     <?php foreach ($estados as $e): ?>
-                        <option value="<?= $e['id_estado'] ?>"><?= htmlspecialchars($e['estado']) ?></option>
+                        <option value="<?= $e['id_estado'] ?>" <?= ($e['id_estado'] == ($nuevo_estado ?? '') ? 'selected' : '') ?>>
+                            <?= htmlspecialchars($e['estado']) ?>
+                        </option>
                     <?php endforeach; ?>
                 </select>
                 <button type="submit">Actualizar</button>

@@ -1,10 +1,11 @@
 <?php
+session_start();
 // administrador/gestionar_pedidos.php
 require_once '../config_sesion.php'; // Ajusta la ruta según tu estructura
 
 // Redirección si no es administrador
 if (!isset($_SESSION['usuario']) || $_SESSION['tipo_usuario'] != 1) {
-    header("Location: ../login_admin.php");
+    header("Location: ../admin/login.php");
     exit();
 }
 

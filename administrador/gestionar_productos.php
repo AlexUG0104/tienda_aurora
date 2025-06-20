@@ -5,7 +5,7 @@ require_once 'classes/GestorProductos.php';
 
 // Redirección si no es administrador
 if (!isset($_SESSION['usuario']) || $_SESSION['tipo_usuario'] != 1) {
-    header("Location: ../login_admin.php"); // Ajusta la ruta si es necesario
+    header("Location: ../admin/login.php"); // Ajusta la ruta si es necesario
     exit();
 }
 

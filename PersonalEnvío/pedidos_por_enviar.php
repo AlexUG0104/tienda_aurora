@@ -4,26 +4,36 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 session_start();
 
-$conn = new PDO("pgsql:host=localhost;dbname=aurora", "cesar", "1234");
+try {
+    $conn = new PDO("pgsql:host=localhost;dbname=aurora", "cesar", "1234");
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$sql = "SELECT p.id, c.nombre AS cliente, p.fecha_compra, e.estado
+    // Consulta para listar pedidos que están 'Pendiente' o 'En proceso'
+    $sql = "
+        SELECT p.id, c.nombre AS cliente, p.fecha_compra, e.estado
         FROM pedido p
         JOIN cliente c ON c.id = p.id_cliente
         JOIN pedido_estado e ON e.id_estado = p.estado_pedido
-        WHERE e.estado IN ('Pendiente', 'En proceso')";
+        WHERE e.estado IN ('Pendiente', 'En proceso')
+        ORDER BY p.fecha_compra DESC
+    ";
+    $stmt = $conn->query($sql);
+    $pedidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt = $conn->query($sql);
-$pedidos = $stmt->fetchAll();
+} catch (PDOException $ex) {
+    echo "Error en la conexión o consulta: " . $ex->getMessage();
+    exit;
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Pedidos por Enviar</title>
-    <link rel="icon" href="imagenes/AB.ico" type="image/x-icon">
-
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="imagenes/AB.ico" type="image/x-icon" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet" />
     <style>
         body {
             margin: 0;
@@ -97,18 +107,28 @@ $pedidos = $stmt->fetchAll();
     <div class="main-content">
         <div class="tabla-scroll">
             <table>
-                <tr>
-                    <th>ID</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Acción</th>
-                </tr>
-                <?php foreach ($pedidos as $p): ?>
+                <thead>
                     <tr>
-                        <td><?= $p['id'] ?></td>
-                        <td><?= $p['cliente'] ?></td>
-                        <td><?= date("d/m/Y", strtotime($p['fecha_compra'])) ?></td>
-                        <td><?= $p['estado'] ?></td>
-                        <td><a href="pedidos_actualizar_estado.php?id=<?= $p['id'] ?>">Actualizar estado</a></td>
+                        <th>ID</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Acción</th>
                     </tr>
-                <?php endforeach; ?>
+                </thead>
+                <tbody>
+                <?php if (!empty($pedidos)): ?>
+                    <?php foreach ($pedidos as $p): ?>
+                        <tr>
+                            <td><?= htmlspecialchars($p['id']) ?></td>
+                            <td><?= htmlspecialchars($p['cliente']) ?></td>
+                            <td><?= htmlspecialchars(date("d/m/Y", strtotime($p['fecha_compra']))) ?></td>
+                            <td><?= htmlspecialchars($p['estado']) ?></td>
+                            <td>
+                                <a href="pedidos_actualizar_estado.php?id=<?= urlencode($p['id']) ?>">Actualizar estado</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="5">No hay pedidos pendientes o en proceso.</td></tr>
+                <?php endif; ?>
+                </tbody>
             </table>
         </div>
     </div>
