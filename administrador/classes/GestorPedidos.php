@@ -41,7 +41,7 @@ class GestorPedidos {
      * Obtiene una lista completa de pedidos para el panel de administración.
      * (Mantengo esta función como ya la teníamos, solo para referencia)
      *
-     * @return array Un array de objetos stdClass con los datos de los pedidos o un array vacío.
+     * @return array 
      */
     public function obtenerPedidosAdministrador($nombreCliente = '', $idCliente = '') {
         try {
@@ -75,21 +75,16 @@ class GestorPedidos {
      * @return array Un array de objetos con los pedidos pendientes.
      */
     public function obtenerPedidosAdministradorPendientes() {
-        try {
-            $sql = "SELECT p.*, pe.estado AS estado_pedido_texto, c.nombre AS nombre_cliente
-                    FROM pedido p
-                    JOIN pedido_estado pe ON p.estado_pedido = pe.id_estado
-                    JOIN cliente c ON p.id_cliente = c.id
-                    WHERE p.estado_pedido = 1
-                    ORDER BY p.fecha_compra DESC";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute();
-            return $stmt->fetchAll(PDO::FETCH_OBJ);
-        } catch (PDOException $e) {
-            error_log("Error al obtener pedidos pendientes: " . $e->getMessage());
-            return [];
-        }
+    try {
+        $stmt = $this->pdo->prepare("SELECT * FROM obtener_pedidos_pendientes()");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    } catch (PDOException $e) {
+        error_log("Error al obtener pedidos pendientes: " . $e->getMessage());
+        return [];
     }
+}
+
 
     
 

@@ -18,6 +18,18 @@ class GestorProductos {
             return ['error' => 'Error al obtener productos.', 'details' => $e->getMessage()];
         }
     }
+    public function obtenerProductoPorId(int $id): ?array {
+        try {
+            $stmt = $this->pdo->prepare("SELECT * FROM obtener_producto_por_id(:id)");
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->execute();
+            $product = $stmt->fetch(PDO::FETCH_ASSOC); 
+            return $product ?: null; 
+        } catch (PDOException $e) {
+            error_log("Error en GestorProductos::obtenerProductoPorId (SP obtener_producto_por_id): " . $e->getMessage());
+            return null;
+        }
+    }
     public function obtenerCategorias() {
     try {
         $sql = "SELECT * FROM obtener_categorias()";
@@ -46,7 +58,6 @@ public function insertarProducto($data) {
 
         $stmt = $this->pdo->prepare($sql);
 
-        // Preparar parámetros exactamente como requiere la BD
         $stmt->execute([
             ':codigo_producto' => (string)$data['codigo_producto'],
             ':nombre'           => (string)$data['nombre'],
@@ -56,7 +67,7 @@ public function insertarProducto($data) {
             ':talla'            => isset($data['talla']) ? (string)$data['talla'] : null,
             ':id_categoria'     => isset($data['id_categoria']) ? (int)$data['id_categoria'] : null,
             ':color'            => isset($data['color']) ? (string)$data['color'] : null,
-            ':usuario_creacion' => isset($data['usuario_creacion']) ? (int)$data['usuario_creacion'] : 1, // por defecto
+            ':usuario_creacion' => isset($data['usuario_creacion']) ? (int)$data['usuario_creacion'] : 1,
             ':url_imagen' => !empty($data['url_imagen']) ? (string)$data['url_imagen'] : null,
         ]);
 
@@ -89,7 +100,7 @@ public function insertarProducto($data) {
                 $data['talla'] ?? null,
                 isset($data['id_categoria']) ? (int)$data['id_categoria'] : null,
                 $data['color'] ?? null,
-                $data['url_imagen'] ?? null // Asegúrate de que tu función SQL actualizar_producto acepte url_imagen
+                $data['url_imagen'] ?? null 
             ]);
             return ['success' => true, 'message' => 'Producto actualizado exitosamente.'];
         } catch (PDOException $e) {

@@ -3,41 +3,51 @@ require_once '../config_sesion.php';
 require_once '../db.php';
 
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
-    header("Location: login_cliente.php?type=client");
-    exit();
+    exit("Acceso no autorizado.");
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $idPedido = $_POST['id_pedido'];
-    $calificacion = $_POST['calificacion'];
-    $comentario = trim($_POST['comentario']);
+    $idPedido = isset($_POST['id_pedido']) ? (int) $_POST['id_pedido'] : 0;
+    $comentario = isset($_POST['comentario']) ? trim($_POST['comentario']) : '';
+    $calificacion = isset($_POST['calificacion']) ? (int) $_POST['calificacion'] : 0;
 
-    // Validación básica
-    if (empty($idPedido) || empty($calificacion) || empty($comentario)) {
-        die("Todos los campos son obligatorios.");
+    if ($idPedido <= 0 || empty($comentario) || $calificacion < 1 || $calificacion > 5) {
+        exit("<script>window.parent.postMessage('resena_error', '*');</script>");
     }
 
-    // Verificar que no exista ya una reseña para este pedido
-    $stmtCheck = $pdo->prepare("SELECT COUNT(*) FROM resena WHERE id_pedido = :id_pedido");
-    $stmtCheck->execute([':id_pedido' => $idPedido]);
-    if ($stmtCheck->fetchColumn() > 0) {
-        die("Ya has enviado una reseña para este pedido.");
+    try {
+        // Verificar que el pedido pertenece al cliente autenticado
+        $stmt = $pdo->prepare("
+            SELECT p.id FROM pedido p
+            JOIN cliente c ON p.id_cliente = c.id
+            WHERE p.id = :id_pedido AND c.id_credencial = :credencial
+        ");
+        $stmt->execute([
+            ':id_pedido' => $idPedido,
+            ':credencial' => $_SESSION['user_id']
+        ]);
+        $esValido = $stmt->fetchColumn();
+
+        if (!$esValido) {
+            exit("<script>window.parent.postMessage('resena_error', '*');</script>");
+        }
+
+        // Ejecutar SP para insertar la reseña
+        $stmtInsert = $pdo->prepare("CALL sp_insertar_resena(:id_pedido, :comentario, :calificacion)");
+        $stmtInsert->execute([
+            ':id_pedido' => $idPedido,
+            ':comentario' => $comentario,
+            ':calificacion' => $calificacion
+        ]);
+
+        // Avisar al padre que fue exitosa
+        echo "<script>
+            window.parent.postMessage('resena_enviada', '*');
+        </script>";
+    } catch (PDOException $e) {
+        echo "<script>window.parent.postMessage('resena_error', '*');</script>";
     }
-
-    // Insertar reseña
-    $stmtInsert = $pdo->prepare("
-        INSERT INTO resena (id_pedido, comentario, calificacion, fecha_reseña)
-        VALUES (:id_pedido, :comentario, :calificacion, CURRENT_TIMESTAMP)
-    ");
-    $stmtInsert->execute([
-        ':id_pedido' => $idPedido,
-        ':comentario' => $comentario,
-        ':calificacion' => $calificacion
-    ]);
-
-    // Redirigir a éxito o página de pedidos
-    header("Location: mis_pedidos.php?mensaje=reseña_guardada");
-    exit();
 } else {
-    die("Método no permitido.");
+    echo "<script>window.parent.postMessage('resena_error', '*');</script>";
 }
+?>

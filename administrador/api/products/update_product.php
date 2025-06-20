@@ -1,8 +1,8 @@
 <?php
 // administrador/api/products/update_product.php
-require_once '../../../config_sesion.php'; // Subir tres niveles
-require_once '../../../db.php';          // Subir tres niveles
-require_once '../../classes/GestorProductos.php'; // Subir dos niveles, luego entrar a classes
+require_once '../../../config_sesion.php'; 
+require_once '../../../db.php';         
+require_once '../../classes/GestorProductos.php'; 
 
 header('Content-Type: application/json');
 
@@ -14,8 +14,8 @@ if (empty($data['id']) || empty($data['nombre']) || empty($data['precio_unitario
         exit;
     }
 
-    $gestorProductos = new GestorProductos($pdo); // Nombre de clase actualizado
-    $response = $gestorProductos->actualizarProducto($data); // Nombre de método actualizado
+    $gestorProductos = new GestorProductos($pdo); 
+    $response = $gestorProductos->actualizarProducto($data); 
 
     echo json_encode($response);
 } else {

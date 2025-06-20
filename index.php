@@ -313,7 +313,7 @@ require_once 'config_sesion.php';
         </div>
     </div>
 
-    <!-- CATEGORÍAS DESTACADAS -->
+   
     <section class="categorias-index">
         <h2>Categorías</h2>
         <div class="categorias-grid">
@@ -347,7 +347,6 @@ require_once 'config_sesion.php';
         <a href="cliente/registrar_cliente.php" class="btn-suscribirse">Suscribirse</a>
     </section>
 
-
     <!-- CARRUSEL 2 -->
     <div class="carrusel-container carrusel-secundario">
         <button class="boton izquierda" onclick="moverCarrusel2(-1)">&#10094;</button>
@@ -363,8 +362,6 @@ require_once 'config_sesion.php';
         <p>Aurora Boutique &copy; 2025. Todos los derechos reservados.</p>
     </footer>
 
-
-
 <script>
 
     // Variables para carrusel 1
@@ -372,7 +369,7 @@ require_once 'config_sesion.php';
     const carrusel = document.getElementById('carrusel');
     const imagenes = carrusel.querySelectorAll('img');
     const totalImgs = imagenes.length;
-    const imagenesPorVista = 2; // 50vw + 50vw = 100vw
+    const imagenesPorVista = 2;
 
     function moverCarrusel(direccion) {
         indice += direccion;

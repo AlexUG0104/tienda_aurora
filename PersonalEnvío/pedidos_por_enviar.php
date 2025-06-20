@@ -4,22 +4,26 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 session_start();
 
-try {
-    $conn = new PDO("pgsql:host=localhost;dbname=aurora", "cesar", "1234");
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+if (isset($_SESSION['estado_actualizado'])) {
+    echo "<div style='background:#d4edda;color:#155724;padding:15px;border-radius:5px;margin:10px auto;width:90%;max-width:600px;text-align:center;'>";
+    echo "El estado del pedido fue actualizado correctamente.";
+    if (isset($_SESSION['correo_enviado']) && $_SESSION['correo_enviado']) {
+        echo " El correo de notificación fue enviado exitosamente.";
+    } else {
+        echo " Pero hubo un problema al enviar el correo de notificación.";
+    }
+    echo "</div>";
 
-    // Consulta para listar pedidos que están 'Pendiente' o 'En proceso'
-    $sql = "
-        SELECT p.id, c.nombre AS cliente, p.fecha_compra, e.estado
-        FROM pedido p
-        JOIN cliente c ON c.id = p.id_cliente
-        JOIN pedido_estado e ON e.id_estado = p.estado_pedido
-        WHERE e.estado IN ('Pendiente', 'En proceso')
-        ORDER BY p.fecha_compra DESC
-    ";
+    unset($_SESSION['estado_actualizado'], $_SESSION['correo_enviado']);
+}
+
+
+
+require_once __DIR__ . '/../db.php'; 
+try {
+    $sql = "SELECT * FROM obtener_pedidos_pendientes()";
     $stmt = $conn->query($sql);
     $pedidos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 } catch (PDOException $ex) {
     echo "Error en la conexión o consulta: " . $ex->getMessage();
     exit;
@@ -55,6 +59,11 @@ try {
             font-weight: bold;
             font-size: 1.1rem;
         }
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+        }
         .main-content {
             padding-top: 20px;
             display: flex;
@@ -62,7 +71,7 @@ try {
         }
         .tabla-scroll {
             max-height: 400px;
-            overflow-y: scroll;
+            overflow-y: auto;
             border: 1px solid #ddd;
             border-radius: 5px;
             width: 90%;
@@ -86,10 +95,13 @@ try {
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        h2 {
-            text-align: center;
-            margin-top: 20px;
-            color: #333;
+        a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -109,7 +121,11 @@ try {
             <table>
                 <thead>
                     <tr>
-                        <th>ID</th><th>Cliente</th><th>Fecha</th><th>Estado</th><th>Acción</th>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Fecha</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>

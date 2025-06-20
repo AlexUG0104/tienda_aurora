@@ -15,7 +15,6 @@ class GestorUsuarios {
      */
     public function obtenerUsuarios(): array {
         try {
-            // Llama al procedimiento almacenado que ahora devuelve 'nombre_tipo_usuario'
             $stmt = $this->pdo->prepare("SELECT * FROM obtener_usuarios_existentes()");
             $stmt->execute();
             $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -40,18 +39,17 @@ class GestorUsuarios {
    public function registrarUsuario(string $nombre, string $clave, int $id_tipo_usuario): array {
     try {
         if (empty($nombre) || empty($clave) || !in_array($id_tipo_usuario, [1, 2, 3])) {
-            return ['success' => false, 'message' => 'Datos de usuario incompletos o inválidos.']; // OK, validación básica.
+            return ['success' => false, 'message' => 'Datos de usuario incompletos o inválidos.']; 
         }
 
-        $hashed_password = password_hash($clave, PASSWORD_DEFAULT); // OK, buen hashing.
-        // Asumiendo que 'insertar_usuario' en el SP espera 'contrasena'
-        $stmt = $this->pdo->prepare("SELECT insertar_usuario(:nombre, :contrasena, :id_tipo_usuario)"); // CAMBIO: Usar ':contrasena'
+        $hashed_password = password_hash($clave, PASSWORD_DEFAULT);
+        $stmt = $this->pdo->prepare("SELECT insertar_usuario(:nombre, :contrasena, :id_tipo_usuario)"); 
         $stmt->bindParam(':nombre', $nombre);
-        $stmt->bindParam(':contrasena', $hashed_password); // CAMBIO: Bindear a ':contrasena'
+        $stmt->bindParam(':contrasena', $hashed_password); 
         $stmt->bindParam(':id_tipo_usuario', $id_tipo_usuario, PDO::PARAM_INT);
 
         if ($stmt->execute()) {
-            $newUserId = $stmt->fetchColumn(); // OK
+            $newUserId = $stmt->fetchColumn(); 
             if ($newUserId) {
                 return ['success' => true, 'newUserId' => $newUserId];
             } else {
@@ -83,16 +81,12 @@ class GestorUsuarios {
      */
     public function obtenerUsuarioPorId(int $id): ?array {
         try {
-            // Llama al procedimiento almacenado
             $stmt = $this->pdo->prepare("SELECT * FROM obtener_usuario_por_id(:id)");
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
             $stmt->execute();
-            // Fetch the result as an associative array
             $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            // If the stored procedure returns a single row or NULL, fetch() is appropriate.
-            // If it can return an empty result set (0 rows), fetch() would return false.
-            return $usuario ?: null; // Return null if not found
+            return $usuario ?: null; 
 
         } catch (PDOException $e) {
             error_log("Error al obtener usuario por ID (SP obtener_usuario_por_id): " . $e->getMessage());
@@ -112,14 +106,14 @@ class GestorUsuarios {
      */
   public function actualizarUsuario(int $id, string $nombre, ?string $clave = null, int $id_tipo_usuario): array {
     try {
-        $hashed_password = $clave !== null && !empty($clave) ? password_hash($clave, PASSWORD_DEFAULT) : null; // OK
+        $hashed_password = $clave !== null && !empty($clave) ? password_hash($clave, PASSWORD_DEFAULT) : null;
 
         
         $stmt = $this->pdo->prepare("SELECT actualizar_usuario(:id, :nombre, :id_tipo_usuario, :nueva_contrasena)");
         $stmt->bindParam(':id', $id, PDO::PARAM_INT);
         $stmt->bindParam(':nombre', $nombre);
         $stmt->bindParam(':id_tipo_usuario', $id_tipo_usuario, PDO::PARAM_INT);
-        $stmt->bindParam(':nueva_contrasena', $hashed_password); // CAMBIO: Usar ':nueva_contrasena'
+        $stmt->bindParam(':nueva_contrasena', $hashed_password); 
 
         if ($stmt->execute()) {
             $result = $stmt->fetchColumn();
@@ -137,28 +131,23 @@ class GestorUsuarios {
         return ['success' => false, 'message' => 'Error de base de datos al actualizar usuario.'];
     }
 }
-// Dentro de la clase GestorUsuarios// Este método parece duplicar funcionalidad con registrarUsuario y actualizarUsuario.
-// Generalmente, es mejor tener métodos específicos para cada acción.
-// Si lo mantienes, debe llamar a los métodos específicos.
+
 public function procesarUsuario($id, $nombre, $clave, $tipoUsuarioId, $accion) {
     try {
         if ($accion === 'register') {
-            // Llama a registrarUsuario que ya maneja hashing y SP.
             return $this->registrarUsuario($nombre, $clave, $tipoUsuarioId);
 
         } elseif ($accion === 'update') {
-            // Llama a actualizarUsuario que ya maneja hashing y SP.
             return $this->actualizarUsuario($id, $nombre, $clave, $tipoUsuarioId);
 
         } else {
             throw new Exception("Acción de usuario no válida.");
         }
-    } catch (Exception $e) { // Captura Exception, no solo PDOException
+    } catch (Exception $e) { 
         error_log("Error al procesar usuario: " . $e->getMessage());
         return ['success' => false, 'message' => 'Error de procesamiento: ' . $e->getMessage()];
     }
 }
- // ✅ Solo este método fue modificado para usar el SP en PostgreSQL
     public function eliminarUsuario($id) {
     try {
         $stmt = $this->pdo->prepare("CALL sp_eliminar_usuario(:id)");
@@ -167,7 +156,6 @@ public function procesarUsuario($id, $nombre, $clave, $tipoUsuarioId, $accion) {
 
         return ['success' => true, 'message' => 'Usuario eliminado con éxito.'];
     } catch (PDOException $e) {
-        // Si el SP lanza EXCEPTION (como cuando no existe el usuario)
         return ['success' => false, 'message' => $e->getMessage()];
     }
 }

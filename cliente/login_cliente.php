@@ -170,7 +170,7 @@ if (isset($_SESSION['login_error'])) {
     </div>
     <div class="nav-right">
         <select class="login-type-select" onchange="location = this.value;">
-            <option value="/admin/login.php">Iniciar Sesión como Administrador</option>
+            <option value="/administrador/login.php">Iniciar Sesión como Administrador</option>
             <option value="/cliente/login_cliente.php" selected>Iniciar Sesión como Cliente</option>
             <option value="/PersonalEnvío/login.php">Iniciar Sesión como Personal de Envíos</option>
         </select>

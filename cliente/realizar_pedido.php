@@ -307,6 +307,7 @@ function actualizarTotales() {
 
         fila.querySelector(".subtotal").innerText = "₡" + subtotal.toFixed(2);
         total += subtotal;
+        
     });
 
     document.getElementById("total").innerText = total.toFixed(2);
@@ -335,6 +336,37 @@ function toggleDireccion() {
 // Inicializar comportamiento
 window.addEventListener('DOMContentLoaded', () => {
     actualizarTotales(); // Para cargar el carrito desde el inicio
+    document.getElementById("pedido-form").addEventListener("submit", function(event) {
+    const metodo = document.querySelector('input[name="metodo_pago"]:checked');
+    const comprobante = document.getElementById("comprobante_envio");
+    const direccion = document.getElementById("direccion_envio");
+
+    if (!metodo) {
+        alert("Debe seleccionar un método de pago.");
+        event.preventDefault();
+        return;
+    }
+
+    const metodoSeleccionado = metodo.value.toLowerCase();
+
+    // Validar comprobante para SINPE o Transferencia
+    if ((metodoSeleccionado === "sinpe" || metodoSeleccionado === "transferencia") &&
+        (!comprobante || comprobante.value.trim() === "")) {
+        alert("Debe ingresar el comprobante de pago para SINPE o Transferencia.");
+        comprobante.focus();
+        event.preventDefault();
+        return;
+    }
+
+    // Validar dirección de envío para métodos distintos a 'efectivo'
+    if (metodoSeleccionado !== "efectivo" &&
+        (!direccion || direccion.value.trim() === "")) {
+        alert("Debe ingresar la dirección de envío.");
+        direccion.focus();
+        event.preventDefault();
+        return;
+    }
+});
 });
 </script>
 

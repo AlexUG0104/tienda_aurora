@@ -8,7 +8,6 @@ error_reporting(E_ALL);
 // Para db.php que está en TIENDA_AURORA/
 require_once '../../../db.php';
 
-// Para GestorUsuarios.php que está en TIENDA_AURORA/administrador/classes/
 require_once '../../classes/GestorUsuarios.php';
 
 header('Content-Type: application/json');
@@ -16,7 +15,6 @@ header('Content-Type: application/json');
 $response = ['error' => ''];
 
 try {
-    // Verificar si $pdo está disponible (de db.php)
     if (!isset($pdo) || !$pdo instanceof PDO) {
         throw new Exception("La conexión a la base de datos (PDO) no está disponible.");
     }
@@ -27,15 +25,14 @@ try {
 
     $userId = (int)$_GET['id'];
     $gestorUsuarios = new GestorUsuarios($pdo);
-    $usuario = $gestorUsuarios->obtenerUsuarioPorId($userId); // Asegúrate de que este método exista y funcione
+    $usuario = $gestorUsuarios->obtenerUsuarioPorId($userId); 
 
     if ($usuario) {
-        // MUY IMPORTANTE: No envíes la clave hasheada al frontend por seguridad.
-        // Si tu SP o query devuelve una columna llamada 'contrasena' o 'clave', quítala.
-        if (isset($usuario['contrasena'])) { // O 'clave' si ese es el nombre de tu columna
+
+        if (isset($usuario['contrasena'])) { 
             unset($usuario['contrasena']);
         }
-        if (isset($usuario['clave'])) { // Si usas 'clave' en tu SP
+        if (isset($usuario['clave'])) { 
             unset($usuario['clave']);
         }
 
@@ -48,6 +45,6 @@ try {
 } catch (Exception $e) {
     $response['error'] = 'Error al obtener usuario: ' . $e->getMessage();
     error_log("Error en get_user_by_id.php: " . $e->getMessage() . " en " . $e->getFile() . " línea " . $e->getLine());
-    echo json_encode($response); // Asegúrate de que el JSON de error también sea válido
+    echo json_encode($response); 
 }
 ?>

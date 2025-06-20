@@ -1,10 +1,14 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
 
 require_once '../config_sesion.php';
 require_once '../db.php';
+
+// Verificar que la función str_starts_with exista (para PHP < 8.0)
+if (!function_exists('str_starts_with')) {
+    function str_starts_with($haystack, $needle) {
+        return substr($haystack, 0, strlen($needle)) === $needle;
+    }
+}
 
 if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
     header("Location: ../cliente/login_cliente.php");
@@ -194,8 +198,22 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
             </button>
         </form>
     </div>
-    <div class="nav-right">Aurora Boutique</div>
+
+    <div class="nav-right" style="display: flex; gap: 30px; align-items: center;">
+        <form action="../cliente/mis_pedidos.php" method="get" style="margin: 0;">
+            <button type="submit" style="background: none; border: none; color: #f1f1f1; font-weight: 700; font-size: 1rem; cursor: pointer; padding: 0; font-family: 'Montserrat', sans-serif;">
+                <i class="fas fa-box"></i> Ver mis pedidos
+            </button>
+        </form>
+
+        <form action="../cliente/mis_resenas.php" method="get" style="margin: 0;">
+            <button type="submit" style="background: none; border: none; color: #f1f1f1; font-weight: 700; font-size: 1rem; cursor: pointer; padding: 0; font-family: 'Montserrat', sans-serif;">
+                <i class="fas fa-star"></i> Mis reseñas
+            </button>
+        </form>
+    </div>
 </nav>
+
 
 <div class="productos-grid">
     <?php
@@ -212,32 +230,37 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
 <div class="productos-grid">
     <?php
     foreach ($productos as $p) {
-        $id = (int)$p['id']; 
+        $id = (int)$p['id'];
         $nombre = htmlspecialchars($p['nombre']);
+        $nombreEscapado = addslashes($nombre);
         $descripcion = htmlspecialchars($p['descripcion']);
-        $precio = number_format($p['precio_unitario'], 2);
+        $precio_real = (float)$p['precio_unitario']; // para el onclick
+        $precio_mostrar = number_format($precio_real, 2, '.', ','); // para mostrar en ₡
+
         $talla = htmlspecialchars($p['talla']);
         $url = htmlspecialchars($p['url_imagen']);
+
         if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
             $imagen = $url;
         } elseif (str_starts_with($url, 'imagenes/')) {
-            $imagen = "../" . $url; // ya incluye 'imagenes/portada/' u otra carpeta
+            $imagen = "../" . $url;
         } else {
-            $imagen = "../imagenes/portada/" . $url; // fallback si viene solo el nombre del archivo
-}
+            $imagen = "../imagenes/portada/" . $url;
+        }
 
         echo "
         <div class='producto-card'>
             <img src='$imagen' alt='$nombre'>
             <h3>$nombre</h3>
             <p>$descripcion</p>
-            <div class='precio'>\$$precio</div>
+            <div class='precio'>₡$precio_mostrar</div>
             <div><small>Talla: $talla</small></div>
-            <button class='btn-comprar' onclick=\"agregarAlCarrito($id, '$nombre', $precio, '$talla')\">Comprar</button>
+            <button class='btn-comprar' onclick=\"agregarAlCarrito($id, '$nombreEscapado', $precio_real, '$talla')\">Comprar</button>
         </div>";
     }
     ?>
 </div>
+
 
 <!-- CARRITO FLOTANTE -->
 <div id="carrito">
@@ -261,8 +284,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
     const carrito = [];
 
     function agregarAlCarrito(id, nombre, precio, talla) {
-    carrito.push({ id, nombre, precio, talla, cantidad: 1 });
-    renderizarCarrito();
+        carrito.push({ id, nombre, precio, talla, cantidad: 1 });
+        renderizarCarrito();
     }
 
     function renderizarCarrito() {
@@ -271,7 +294,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] != 2) {
         carrito.forEach((item, index) => {
             carritoItems.innerHTML += `
                 <div class="carrito-item">
-                    ${item.nombre} (Talla: ${item.talla}) - $${item.precio.toFixed(2)}
+                    ${item.nombre} (Talla: ${item.talla}) - ₡${item.precio.toFixed(2)}
                     <button class="btn-eliminar" onclick="eliminarDelCarrito(${index})">✖</button>
                 </div>`;
         });

@@ -20,7 +20,7 @@ $data = [
     'talla' => $_POST['talla'] ?? null,
     'id_categoria' => $_POST['id_categoria'] ?? null,
     'color' => $_POST['color'] ?? null,
-    'usuario_creacion' => $_SESSION['usuario']['id'] ?? 1, // ✅ solo el ID
+    'usuario_creacion' => $_SESSION['usuario']['id'] ?? 1, 
     'url_imagen' => $_POST['url_imagen'] ?? null
 ];
 
@@ -37,17 +37,17 @@ if (
     exit();
 }
 
-// Manejo de imagen (opcional)
+// Manejo de imagen
 if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
     $directorioFisico = realpath(__DIR__ . '/../../../imagenes/portada/') . '/';
     $rutaRelativaWeb = 'imagenes/portada/';
 
-    // Asegurar que el directorio exista
+   
     if (!is_dir($directorioFisico)) {
         mkdir($directorioFisico, 0777, true);
     }
 
-    // Nombre único
+ 
     $nombreArchivo = uniqid() . '_' . basename($_FILES['imagen']['name']);
     $rutaCompleta = $directorioFisico . $nombreArchivo;
 
@@ -59,7 +59,7 @@ if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
         exit();
     }
 } elseif (!isset($_FILES['imagen']) && isset($_POST['url_imagen']) && trim($_POST['url_imagen']) !== '') {
-    $data['url_imagen'] = trim($_POST['url_imagen']); // ✅ Se respeta el valor manual
+    $data['url_imagen'] = trim($_POST['url_imagen']); 
 }
 
 

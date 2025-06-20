@@ -1,16 +1,16 @@
 <?php
 // administrador/api/orders/get_order_details.php
-require_once '../../../config_sesion.php'; // Subir tres niveles
-require_once '../../../db.php';          // Subir tres niveles
-require_once '../../classes/GestorPedidos.php'; // Subir dos niveles, luego entrar a classes
+require_once '../../../config_sesion.php';
+require_once '../../../db.php';          
+require_once '../../classes/GestorPedidos.php'; 
 
 header('Content-Type: application/json');
 
 if (isset($_GET['id_pedido'])) {
     $id_pedido = (int)$_GET['id_pedido'];
 
-    $gestorPedidos = new GestorPedidos($pdo); // Nombre de clase actualizado
-    $response = $gestorPedidos->obtenerDetallesPedido($id_pedido); // Nombre de método actualizado
+    $gestorPedidos = new GestorPedidos($pdo); 
+    $response = $gestorPedidos->obtenerDetallesPedido($id_pedido); 
 
     echo json_encode($response);
 } else {

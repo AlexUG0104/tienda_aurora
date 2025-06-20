@@ -13,15 +13,25 @@ class Mailer {
     public function __construct() {
         $this->mail = new PHPMailer(true);
 
+
+
         try {
+            $this->mail->SMTPDebug = 2;
+            $this->mail->Debugoutput = 'error_log';
             $this->mail->isSMTP();
             $this->mail->Host       = 'smtp.gmail.com';
             $this->mail->SMTPAuth   = true;
             $this->mail->Username   = 'infoauroraboutiquecr@gmail.com';
-            $this->mail->Password   = 'iahvuwoawljwwbgt'; // Pon aquí tu contraseña de aplicación válida
-            $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // TLS
+            $this->mail->Password   = 'jfth kwbv gwxv nbnw'; 
+            $this->mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; 
             $this->mail->Port       = 587;
 
+            // DEBUG para SMTP
+        $this->mail->SMTPDebug = 2; // Puedes usar 0 para desactivar
+        $this->mail->Debugoutput = function($str, $level) {
+            error_log("SMTP Debug level $level: $str");
+        };
+        
             $this->mail->setFrom('infoauroraboutiquecr@gmail.com', 'Aurora Boutique');
             $this->mail->isHTML(true);
             $this->mail->CharSet = 'UTF-8';
@@ -48,6 +58,9 @@ class Mailer {
             return true;
         } catch (Exception $e) {
             error_log("Error al enviar correo: {$this->mail->ErrorInfo}");
+            error_log("Error al enviar correo: " . $e->getMessage());
+            error_log("PHPMailer error: " . $this->mail->ErrorInfo);
+
             return false;
         }
     }

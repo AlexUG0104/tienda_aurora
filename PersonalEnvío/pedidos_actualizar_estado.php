@@ -1,89 +1,101 @@
 <?php
-// Archivo: pedidos_actualizar_estado.php
 session_start();
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
+require_once __DIR__ . '/../db.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../utils/Mailer.php';
 
 use Aurora\Mailer;
 
-// Conexión a base de datos
-$conn = new PDO("pgsql:host=localhost;dbname=aurora", "cesar", "1234");
-
 // Obtener ID del pedido por GET
 $id_pedido = $_GET['id'] ?? null;
-
 if (!$id_pedido) {
     die('No se proporcionó un ID de pedido válido.');
 }
+
+// Obtener estados disponibles (fuera del POST para mostrar el select)
+$sql_estados = "SELECT * FROM obtener_todos_los_estados()";
+$estados = $conn->query($sql_estados)->fetchAll();
+
+$nuevo_estado = null;
 
 // Si el formulario se envía
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nuevo_estado = $_POST['estado'] ?? null;
     if ($nuevo_estado) {
-        $sql = "UPDATE pedido SET estado_pedido = :estado WHERE id = :id";
+        // Actualizar estado del pedido
+        $sql = "CALL actualizar_estado_pedido(:id, :estado)";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([':estado' => $nuevo_estado, ':id' => $id_pedido]);
+        $stmt->execute([':id' => $id_pedido, ':estado' => $nuevo_estado]);
 
-        $sql_estado = "SELECT estado FROM pedido_estado WHERE id_estado = :id_estado";
+
+        // Obtener nombre del estado actualizado usando función
+        $sql_estado = "SELECT obtener_nombre_estado(:id_estado)";
         $stmt_estado = $conn->prepare($sql_estado);
         $stmt_estado->execute([':id_estado' => $nuevo_estado]);
         $estado_actual = $stmt_estado->fetchColumn();
 
-        if (strtolower($estado_actual) === 'enviado') {
-    $sql_info = "SELECT c.nombre AS nombre_cliente, cc.correo AS correo_cliente, p.fecha_compra
-    FROM pedido p
-    JOIN cliente c ON c.id = p.id_cliente
-    JOIN cliente_correo cc ON cc.id_cliente = c.id
-    WHERE p.id = :id
-    LIMIT 1";
-$stmt_info = $conn->prepare($sql_info);
-$stmt_info->execute([':id' => $id_pedido]);
-$pedido = $stmt_info->fetch(PDO::FETCH_ASSOC);
+        // Obtener datos del cliente y pedido mediante función
+        $sql_info = "SELECT * FROM obtener_info_pedido_cliente(:id)";
+        $stmt_info = $conn->prepare($sql_info);
+        $stmt_info->execute([':id' => $id_pedido]);
+        $pedido = $stmt_info->fetch(PDO::FETCH_ASSOC);
 
-            if ($pedido && filter_var($pedido['correo_cliente'], FILTER_VALIDATE_EMAIL)) {
-                $mailer = new Mailer();
+        // Mensajes personalizados por estado
+        $mensajes = [
+            'Pendiente'   => 'Tu pedido ha sido recibido y está pendiente de ser procesado.',
+            'En proceso'  => 'Estamos preparando tu pedido con cuidado y dedicación.',
+            'Enviado'     => 'Tu pedido ha sido enviado y está en camino. ¡Gracias por tu compra!',
+            'Entregado'   => 'Tu pedido ha sido entregado exitosamente. ¡Esperamos que lo disfrutes!',
+        ];
+        $mensaje_estado = $mensajes[$estado_actual] ?? "El estado de tu pedido ha sido actualizado.";
 
-                $asunto = "¡Tu pedido ha sido enviado!";
-                $cuerpo = "
-                    <html>
-                    <head>
-                        <style>
-                            body { font-family: Arial, sans-serif; background-color: #f9f9f9; color: #333; }
-                            .container { max-width: 600px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
-                            h2 { color: #007BFF; }
-                            p { font-size: 16px; }
-                        </style>
-                    </head>
-                    <body>
-                        <div class='container'>
-                            <h2>¡Hola " . htmlspecialchars($pedido['nombre_cliente']) . "!</h2>
-                            <p>Nos alegra informarte que tu pedido realizado el <strong>" . date('d/m/Y', strtotime($pedido['fecha_compra'])) . "</strong> ha sido <strong>enviado</strong>.</p>
-                            <p>Gracias por tu compra en <strong>Aurora Boutique</strong>. Te mantendremos al tanto hasta la entrega.</p>
-                            <p>¡Esperamos que disfrutes tu compra!</p>
-                            <p style='margin-top: 30px;'>Atentamente,<br><strong>Boutique Aurora CR</strong></p>
-                        </div>
-                    </body>
-                    </html>
-                ";
+        // Intentar enviar correo y capturar resultado
+        $correo_enviado = false;
+        if ($pedido && filter_var($pedido['correo_cliente'], FILTER_VALIDATE_EMAIL)) {
+            $mailer = new Mailer();
+            $asunto = "Actualización del estado de tu pedido";
+            $cuerpo = "
+                <html>
+                <head>
+                    <style>
+                        body { font-family: Arial, sans-serif; background-color: #f9f9f9; color: #333; }
+                        .container { max-width: 600px; margin: 20px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+                        h2 { color: #007BFF; }
+                        p { font-size: 16px; }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <h2>¡Hola " . htmlspecialchars($pedido['nombre_cliente']) . "!</h2>
+                        <p>Te informamos que el estado de tu pedido realizado el <strong>" . date('d/m/Y', strtotime($pedido['fecha_compra'])) . "</strong> ha cambiado a <strong>" . htmlspecialchars($estado_actual) . "</strong>.</p>
+                        <p>$mensaje_estado</p>
+                        <p>Gracias por confiar en <strong>Aurora Boutique</strong>.</p>
+                        <p style='margin-top: 30px;'>Atentamente,<br><strong>Boutique Aurora CR</strong></p>
+                    </div>
+                </body>
+                </html>
+            ";
 
-                if (!$mailer->enviarCorreo($pedido['correo_cliente'], $asunto, $cuerpo)) {
-                    error_log("No se pudo enviar el correo al cliente con ID pedido: $id_pedido");
-                }
+            $correo_enviado = $mailer->enviarCorreo($pedido['correo_cliente'], $asunto, $cuerpo);
+            if (!$correo_enviado) {
+                error_log("No se pudo enviar el correo al cliente con ID pedido: $id_pedido");
             }
+        } else {
+            error_log("Correo inválido o no encontrado para pedido ID: $id_pedido");
         }
 
+        // Guardar mensaje en sesión para mostrar confirmación en la página de pedidos
         $_SESSION['estado_actualizado'] = true;
+        $_SESSION['correo_enviado'] = $correo_enviado;
+
         header("Location: pedidos_por_enviar.php");
         exit;
     }
 }
-
-$sql_estados = "SELECT id_estado, estado FROM pedido_estado";
-$estados = $conn->query($sql_estados)->fetchAll();
 ?>
 
 <!DOCTYPE html>
@@ -94,6 +106,7 @@ $estados = $conn->query($sql_estados)->fetchAll();
     <link rel="icon" href="../imagenes/AB.ico" type="image/x-icon">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* Tu CSS tal cual */
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: #f0f2f5;

@@ -1,13 +1,18 @@
 <?php
 require_once '../config_sesion.php';
 
-// Detectar si el usuario ya está logueado y redirigir
 if (isset($_SESSION['usuario']) && $_SESSION['tipo_usuario'] == 3) {
     header("Location: pedidos_por_enviar.php");
     exit();
 }
 
-$login_type = 'delivery'; // tipo fijo para este login
+$mensaje = '';
+if (isset($_SESSION['login_error'])) {
+    $mensaje = $_SESSION['login_error'];
+    unset($_SESSION['login_error']);
+}
+
+$login_type = 'delivery';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -136,23 +141,19 @@ $login_type = 'delivery'; // tipo fijo para este login
         </div>
         <div class="nav-right">
             <select class="login-type-select" onchange="location = this.value;">
-                <option value="/admin/login.php">Iniciar Sesión como Administrador</option>
-                <option value="/cliente/login_cliente.php" >Iniciar Sesión como Cliente</option>
-                <option value="/PersonalEnvío/login.php"selected>Iniciar Sesión como Personal de Envíos</option>
+                <option value="/administrador/login.php">Iniciar Sesión como Administrador</option>
+                <option value="/cliente/login_cliente.php">Iniciar Sesión como Cliente</option>
+                <option value="/PersonalEnvío/login.php" selected>Iniciar Sesión como Personal de Envíos</option>
             </select>
-
         </div>
     </nav>
 
     <div class="main-content-wrapper">
         <div class="login-container">
             <h2>Iniciar Sesión como Personal de Envíos</h2>
-            <?php
-            if (isset($_SESSION['login_error'])) {
-                echo '<p class="error-message">' . $_SESSION['login_error'] . '</p>';
-                unset($_SESSION['login_error']);
-            }
-            ?>
+            <?php if (!empty($mensaje)): ?>
+                <p class="error-message"><?= htmlspecialchars($mensaje) ?></p>
+            <?php endif; ?>
             <form method="post" action="verificar_login.php">
                 <label>Nombre de Usuario:</label>
                 <input type="text" name="usuario" required>

@@ -1,21 +1,18 @@
 <?php
 // administrador/api/users/process_user.php
 
-// Habilitar reporte de errores para depuración (¡QUITAR EN PRODUCCIÓN!)
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Rutas de inclusión corregidas
-require_once '../../../db.php'; // Subir 3 niveles desde api/users/ a TIENDA_AURORA/
-require_once '../../classes/GestorUsuarios.php'; // Subir 2 niveles desde api/users/ a administrador/ y luego a classes/
+require_once '../../../db.php'; 
+require_once '../../classes/GestorUsuarios.php';
 
 header('Content-Type: application/json');
 
 $response = ['success' => false, 'message' => ''];
 
 try {
-    // Verificar si $pdo está disponible
     if (!isset($pdo) || !$pdo instanceof PDO) {
         throw new Exception("La conexión a la base de datos (PDO) no está disponible.");
     }
@@ -31,7 +28,7 @@ try {
     if ($action === 'register') {
         $nombre = $_POST['nombre'] ?? null;
         $clave = $_POST['clave'] ?? null;
-        $tipoUsuarioId = $_POST['tipo_usuario_select'] ?? null; // Usar 'tipo_usuario_select' del HTML
+        $tipoUsuarioId = $_POST['tipo_usuario_select'] ?? null; 
 
         // Validaciones aquí
         if (empty($nombre) || empty($clave) || !is_numeric($tipoUsuarioId)) {
@@ -43,15 +40,13 @@ try {
     } elseif ($action === 'update') {
         $id = $_POST['id'] ?? null;
         $nombre = $_POST['nombre'] ?? null;
-        $clave = $_POST['clave'] ?? null; // Puede ser null si no se cambia
-        $tipoUsuarioId = $_POST['tipo_usuario_select'] ?? null; // Usar 'tipo_usuario_select' del HTML
+        $clave = $_POST['clave'] ?? null; 
+        $tipoUsuarioId = $_POST['tipo_usuario_select'] ?? null; 
 
-        // Validaciones aquí
         if (empty($id) || !is_numeric($id) || empty($nombre) || !is_numeric($tipoUsuarioId)) {
             throw new Exception("Faltan datos obligatorios para la actualización o son inválidos.");
         }
 
-        // Llama directamente a actualizarUsuario, no a procesarUsuario de la clase
         $response = $gestorUsuarios->actualizarUsuario((int)$id, $nombre, $clave, (int)$tipoUsuarioId);
 
     } else {

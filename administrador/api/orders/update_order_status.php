@@ -1,8 +1,8 @@
 <?php
 // administrador/api/orders/update_order_status.php
-require_once '../../../config_sesion.php'; // Subir tres niveles
-require_once '../../../db.php';          // Subir tres niveles
-require_once '../../classes/GestorPedidos.php'; // Subir dos niveles, luego entrar a classes
+require_once '../../../config_sesion.php'; 
+require_once '../../../db.php';          
+require_once '../../classes/GestorPedidos.php'; 
 
 header('Content-Type: application/json');
 
@@ -15,8 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $gestorPedidos = new GestorPedidos($pdo); // Nombre de clase actualizado
-    $response = $gestorPedidos->actualizarEstadoPedido($id_pedido, $new_status_id); // Nombre de método actualizado
+    $gestorPedidos = new GestorPedidos($pdo); 
+    $response = $gestorPedidos->actualizarEstadoPedido($id_pedido, $new_status_id); 
 
     echo json_encode($response);
 } else {

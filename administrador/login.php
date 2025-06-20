@@ -1,13 +1,12 @@
 <?php
 require_once '../config_sesion.php';
 
-// Detectar si el usuario ya está logueado y redirigir
 if (isset($_SESSION['usuario']) && $_SESSION['tipo_usuario'] == 3) {
     header("Location: menu.php");
     exit();
 }
 
-$login_type = 'delivery'; // tipo fijo para este login
+$login_type = 'delivery';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -137,7 +136,7 @@ $login_type = 'delivery'; // tipo fijo para este login
         </div>
         <div class="nav-right">
             <select class="login-type-select" onchange="location = this.value;">
-                <option value="/admin/login.php"select>Iniciar Sesión como Administrador</option>
+                <option value="/administrador/login.php"select>Iniciar Sesión como Administrador</option>
                 <option value="/cliente/login_cliente.php">Iniciar Sesión como Cliente</option>
                 <option value="/PersonalEnvío/login.php">Iniciar Sesión como Personal de Envíos</option>
             </select>

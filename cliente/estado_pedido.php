@@ -99,7 +99,7 @@ if (isset($_GET['id_pedido'])) {
                                 <tr>
                                     <td><?=htmlspecialchars($producto['nombre'])?></td>
                                     <td><?=intval($producto['cantidad'])?></td>
-                                    <td>₡ <?=number_format($producto['precio_unitario'], 2, ',', '.')?></td>
+                                    <td>₡ <?=number_format($producto['precio_unitario'], 3, ',', '.')?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
